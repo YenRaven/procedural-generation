@@ -347,6 +347,9 @@
 	                        ctx.drawImage(_this4.refs.cap, 128, 128, 128, 128);
 	                        ctx.drawImage(_this4.refs.cap, 0, 128 + 128 * height, 128, 128);
 	                        ctx.drawImage(_this4.refs.cap, 128, 128 + 128 * height, 128, 128);
+	                        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+	                        //ctx.fillRect(0, 128, 256, 128);
+	                        ctx.fillRect(0, 128 + 128 * height, 256, 128);
 	                    } else {
 	                        capLoad.push(function (ctx) {
 	                            return function () {
@@ -354,6 +357,9 @@
 	                                ctx.drawImage(_this4.refs.cap, 128, 128, 128, 128);
 	                                ctx.drawImage(_this4.refs.cap, 0, 128 + 128 * height, 128, 128);
 	                                ctx.drawImage(_this4.refs.cap, 128, 128 + 128 * height, 128, 128);
+	                                ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+	                                //ctx.fillRect(0, 128, 256, 128);
+	                                ctx.fillRect(0, 128 + 128 * height, 256, 128);
 	                            };
 	                        }(ctx));
 	                    }
@@ -366,6 +372,9 @@
 	                            ctx.drawImage(_this4.refs.dirt, 0, 128 + 128 * height + 128 * i, 128, 128);
 	                            ctx.drawImage(_this4.refs.dirt, 128, 128 + 128 * height + 128 * i, 128, 128);
 	                        }
+	                        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+	                        //ctx.fillRect(0, 256, 256, 128 * (height-1));
+	                        ctx.fillRect(0, 256 + 128 * height, 256, 128 * (height - 1));
 	                    } else {
 	                        dirtLoad.push(function (ctx) {
 	                            return function () {
@@ -375,6 +384,9 @@
 	                                    ctx.drawImage(_this4.refs.dirt, 0, 128 + 128 * height + 128 * i, 128, 128);
 	                                    ctx.drawImage(_this4.refs.dirt, 128, 128 + 128 * height + 128 * i, 128, 128);
 	                                }
+	                                ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+	                                //ctx.fillRect(0, 256, 256, 128 * (height-1));
+	                                ctx.fillRect(0, 256 + 128 * height, 256, 128 * (height - 1));
 	                            };
 	                        }(ctx));
 	                    }

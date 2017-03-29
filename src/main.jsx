@@ -296,12 +296,18 @@ class Main extends React.Component {
                     ctx.drawImage(this.refs.cap, 128, 128, 128, 128);
                     ctx.drawImage(this.refs.cap, 0, 128 + 128 * height, 128, 128);
                     ctx.drawImage(this.refs.cap, 128, 128 + 128 * height, 128, 128);
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
+                    //ctx.fillRect(0, 128, 256, 128);
+                    ctx.fillRect(0, 128 + 128 * height, 256, 128);
                 }else{
                     capLoad.push(((ctx) => () => {
                         ctx.drawImage(this.refs.cap, 0, 128, 128, 128);
                         ctx.drawImage(this.refs.cap, 128, 128, 128, 128);
                         ctx.drawImage(this.refs.cap, 0, 128 + 128 * height, 128, 128);
                         ctx.drawImage(this.refs.cap, 128, 128 + 128 * height, 128, 128);
+                        ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
+                        //ctx.fillRect(0, 128, 256, 128);
+                        ctx.fillRect(0, 128 + 128 * height, 256, 128);
                     })(ctx))
                 }
 
@@ -313,6 +319,9 @@ class Main extends React.Component {
                         ctx.drawImage(this.refs.dirt, 0, 128 + 128 * height + 128 * i, 128, 128);
                         ctx.drawImage(this.refs.dirt, 128, 128 + 128 * height + 128 * i, 128, 128);
                     }
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
+                    //ctx.fillRect(0, 256, 256, 128 * (height-1));
+                    ctx.fillRect(0, 256 + 128 * height, 256, 128 * (height-1));
                 }else{
                     dirtLoad.push(((ctx) => () => {
                         for(var i = 1; i < height; i++){
@@ -321,6 +330,9 @@ class Main extends React.Component {
                             ctx.drawImage(this.refs.dirt, 0, 128 + 128 * height + 128 * i, 128, 128);
                             ctx.drawImage(this.refs.dirt, 128, 128 + 128 * height + 128 * i, 128, 128);
                         }
+                        ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
+                        //ctx.fillRect(0, 256, 256, 128 * (height-1));
+                        ctx.fillRect(0, 256 + 128 * height, 256, 128 * (height-1));
                     })(ctx));
                 }
             }
