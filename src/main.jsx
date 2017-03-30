@@ -18,35 +18,48 @@ class Main extends React.Component {
         this.simplex = new SimplexNoise();
         this.terrainTextures = [];
         this.terrain = [];
+        this.merged = [];
 
         this.boxId = 0;
 
         this.state = {
-            owner:false,
+            user:null,
             sync:{
                 width: 64,
                 height: 64,
-                depth: 12,
+                depth: 32,
                 seed: null
             }
         }
 
+        if(altspace.getUser){
+            altspace.getUser().then((user) => {
+                this.setState({user});
+            });
+        }
+
+        this.boxSizes = new Array(this.state.height);
+
         //this.generateWorld();
     }
 
-    componentWillUpdate(){
-        if(this.sync && this.state.owner){
-            var onComplete = function(error) {
-              if (error) {
-                console.log('Synchronization failed');
-              } else {
-                console.log('Synchronization succeeded');
-              }
-            };
-            this.sync.instance.set(this.state.sync, onComplete);
+    componentWillUpdate(nextProps, nextState){
+        if(nextState != this.state){
+            if(this.sync && nextState.user.isModerator){
+                var onComplete = function(error) {
+                  if (error) {
+                    console.log('Synchronization failed');
+                  } else {
+                    console.log('Synchronization succeeded');
+                  }
+                };
+                this.sync.instance.set(nextState.sync, onComplete);
+            }
+            if(nextState.sync.seed != this.state.sync.seed){
+                this.simplex = new SimplexNoise((new Rand(nextState.sync.seed)).random);
+                this.generateWorld();
+            }
         }
-        this.simplex = new SimplexNoise((new Rand(this.state.sync.seed)).random);
-        this.generateWorld();
     }
 
     render() {
@@ -60,9 +73,18 @@ class Main extends React.Component {
                 sync-system={AppConfig.syncSystem && altspace.utilities?`app: ${AppConfig.appName}; author: ${AppConfig.author}` : null}
             >
             <a-assets>
-                <img src="./assets/dirt.jpg" id="dirt" ref="dirt" />
-                <img src="./assets/topbottom.jpg" id="topbottom" ref="topbottom" />
-                <img src="./assets/cap.jpg" id="cap" ref="cap" />
+                {
+                    this.boxSizes.map((isSize, id)=>{
+                        if(isSize){
+                            return <a-mixin id="merge" geometry={`mergeTo:#blockMerge${id}; skipCache: true; buffer: false`}></a-mixin>
+                        }else{
+                            return null;
+                        }
+                    })
+                }
+                <img src={require("base64-image!../assets/dirt.jpg")} id="dirt" ref="dirt" />
+                <img src={require("base64-image!../assets/topbottom.jpg")} id="topbottom" ref="topbottom" />
+                <img src={require("base64-image!../assets/cap.jpg")} id="cap" ref="cap" /> 
                 {this.terrainTextures.map((txt, id) => {
                     return (
                         txt?
@@ -72,7 +94,7 @@ class Main extends React.Component {
                     })
                 }
             </a-assets>
-            {this.state.owner ? (
+            {(this.state.user && this.state.user.isModerator) ? (
                 <TextControlBtn
                     position={new THREE.Vector3(-1, 0.4, -1.5)}
                     color="#888888"
@@ -84,10 +106,20 @@ class Main extends React.Component {
             ) : null
             }
             {
+                this.boxSizes.map((isSize, id)=>{
+                    if(isSize){
+                        return <a-entity id={`blockMerge${id}`}></a-entity>
+                    }else{
+                        return null;
+                    }
+                })
+            }
+            {
                 this.terrain.map((x, xid) => {
                     return x.map((y, yid) => {
                         return y.map((block, zid) => {
                             return <a-entity
+                                    mixin={`blockMerge${block.end - block.start}`}
                                     ref = {(box) => {
                                         if(box){
                                             this.box.push({
@@ -130,17 +162,18 @@ class Main extends React.Component {
                             sync: data.val()
                         });
                     }else{
-                        this.sync.instance.off("value", callback);
-                        this.setState((state) => {
-                            return {
-                                ...state,
-                                owner: true,
-                                sync: {
-                                    ...state.sync,
-                                    seed:Math.random()*999999999
+                        if(this.state.user.isModerator){
+                            this.setState((state) => {
+                                return {
+                                    ...state,
+                                    owner: true,
+                                    sync: {
+                                        ...state.sync,
+                                        seed:Math.random()*999999999
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
                 }
                 this.sync.instance.on("value", callback);
@@ -260,6 +293,7 @@ class Main extends React.Component {
                         if(!t || z === depth-1){
                             terrain[x][y].push({start:blockStart, end:z});
                             var h = z - blockStart;
+                            this.boxSizes[h] = true;
                             if(!this.terrainTextures[h]){
                                 this.terrainTextures[h] = this.generateTexture(h);
                             }
