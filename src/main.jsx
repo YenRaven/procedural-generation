@@ -44,7 +44,7 @@ class Main extends React.Component {
     }
 
     componentWillUpdate(nextProps, nextState){
-        if(nextState != this.state){
+        if(JSON.stringify(nextState) != JSON.stringify(this.state)){
             if(this.sync && this.state.sync.seed && nextState.user.isModerator){
                 var onComplete = function(error) {
                   if (error) {
@@ -158,22 +158,22 @@ class Main extends React.Component {
                 this.sync = this.scene.systems['sync-system'].connection;
                 var callback = (data) => {
                     if(data.val().seed){
-                        this.setState({
-                            sync: data.val()
-                        });
-                    }else{
-                        if(this.state.user.isModerator){
-                            this.setState((state) => {
-                                return {
-                                    ...state,
-                                    owner: true,
-                                    sync: {
-                                        ...state.sync,
-                                        seed:Math.random()*999999999
-                                    }
-                                }
+                        if(!(JSON.stringify(data) === JSON.stringify(this.state.sync))){
+                            this.setState({
+                                sync: data.val()
                             });
                         }
+                    }else if(this.state.user.isModerator){
+                        this.setState((state) => {
+                            return {
+                                ...state,
+                                owner: true,
+                                sync: {
+                                    ...state.sync,
+                                    seed:Math.random()*999999999
+                                }
+                            }
+                        });
                     }
                 }
                 this.sync.instance.on("value", callback);
@@ -189,7 +189,6 @@ class Main extends React.Component {
                 }
             });
         }
-        //this.meshBoxes();
     }
 
     componentDidUpdate(){

@@ -132,7 +132,7 @@
 	    _createClass(Main, [{
 	        key: 'componentWillUpdate',
 	        value: function componentWillUpdate(nextProps, nextState) {
-	            if (nextState != this.state) {
+	            if (JSON.stringify(nextState) != JSON.stringify(this.state)) {
 	                if (this.sync && this.state.sync.seed && nextState.user.isModerator) {
 	                    var onComplete = function onComplete(error) {
 	                        if (error) {
@@ -231,20 +231,20 @@
 	                    _this3.sync = _this3.scene.systems['sync-system'].connection;
 	                    var callback = function callback(data) {
 	                        if (data.val().seed) {
-	                            _this3.setState({
-	                                sync: data.val()
-	                            });
-	                        } else {
-	                            if (_this3.state.user.isModerator) {
-	                                _this3.setState(function (state) {
-	                                    return _extends({}, state, {
-	                                        owner: true,
-	                                        sync: _extends({}, state.sync, {
-	                                            seed: Math.random() * 999999999
-	                                        })
-	                                    });
+	                            if (!(JSON.stringify(data) === JSON.stringify(_this3.state.sync))) {
+	                                _this3.setState({
+	                                    sync: data.val()
 	                                });
 	                            }
+	                        } else if (_this3.state.user.isModerator) {
+	                            _this3.setState(function (state) {
+	                                return _extends({}, state, {
+	                                    owner: true,
+	                                    sync: _extends({}, state.sync, {
+	                                        seed: Math.random() * 999999999
+	                                    })
+	                                });
+	                            });
 	                        }
 	                    };
 	                    _this3.sync.instance.on("value", callback);
@@ -258,7 +258,6 @@
 	                    });
 	                });
 	            }
-	            //this.meshBoxes();
 	        }
 	    }, {
 	        key: 'componentDidUpdate',
