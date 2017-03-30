@@ -25,9 +25,9 @@ class Main extends React.Component {
         this.state = {
             user:false,
             sync:{
-                width: 4,
-                height: 4,
-                depth: 6,
+                width: 24,
+                height: 24,
+                depth: 24,
                 seed: null
             }
         }
