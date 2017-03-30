@@ -133,7 +133,7 @@
 	        key: 'componentWillUpdate',
 	        value: function componentWillUpdate(nextProps, nextState) {
 	            if (nextState != this.state) {
-	                if (this.sync && nextState.user.isModerator) {
+	                if (this.sync && this.state.sync.seed && nextState.user.isModerator) {
 	                    var onComplete = function onComplete(error) {
 	                        if (error) {
 	                            console.log('Synchronization failed');

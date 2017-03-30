@@ -45,7 +45,7 @@ class Main extends React.Component {
 
     componentWillUpdate(nextProps, nextState){
         if(nextState != this.state){
-            if(this.sync && nextState.user.isModerator){
+            if(this.sync && this.state.sync.seed && nextState.user.isModerator){
                 var onComplete = function(error) {
                   if (error) {
                     console.log('Synchronization failed');
