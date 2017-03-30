@@ -232,9 +232,12 @@
 	                    var callback = function callback(data) {
 	                        var val = data.val();
 	                        if (val.seed) {
-	                            var _val;
-	
-	                            var syncVals = (_val = val, width = _val.width, height = _val.height, depth = _val.depth, seed = _val.seed, _val);
+	                            var syncVals = {
+	                                width: val.width,
+	                                height: val.height,
+	                                depth: val.depth,
+	                                seed: val.seed
+	                            };
 	                            _this3.setState({
 	                                sync: syncVals
 	                            });

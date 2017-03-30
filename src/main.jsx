@@ -160,11 +160,11 @@ class Main extends React.Component {
                     let val = data.val();
                     if(val.seed){
                         let syncVals = {
-                            width,
-                            height,
-                            depth,
-                            seed
-                        } = val;
+                            width: val.width,
+                            height: val.height,
+                            depth: val.depth,
+                            seed: val.seed
+                        };
                         this.setState({
                             sync: syncVals
                         });
