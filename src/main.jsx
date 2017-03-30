@@ -23,7 +23,7 @@ class Main extends React.Component {
         this.boxId = 0;
 
         this.state = {
-            user:null,
+            user:false,
             sync:{
                 width: 64,
                 height: 64,
@@ -84,7 +84,7 @@ class Main extends React.Component {
                 }
                 <img src={require("base64-image!../assets/dirt.jpg")} id="dirt" ref="dirt" />
                 <img src={require("base64-image!../assets/topbottom.jpg")} id="topbottom" ref="topbottom" />
-                <img src={require("base64-image!../assets/cap.jpg")} id="cap" ref="cap" /> 
+                <img src={require("base64-image!../assets/cap.jpg")} id="cap" ref="cap" />
                 {this.terrainTextures.map((txt, id) => {
                     return (
                         txt?
@@ -182,7 +182,6 @@ class Main extends React.Component {
             this.setState((state) => {
                 return {
                     ...state,
-                    owner: true,
                     sync: {
                         ...state.sync,
                         seed:Math.random()

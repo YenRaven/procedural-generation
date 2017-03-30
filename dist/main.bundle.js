@@ -108,7 +108,7 @@
 	        _this.boxId = 0;
 	
 	        _this.state = {
-	            user: null,
+	            user: false,
 	            sync: {
 	                width: 64,
 	                height: 64,
@@ -252,7 +252,6 @@
 	            } else {
 	                this.setState(function (state) {
 	                    return _extends({}, state, {
-	                        owner: true,
 	                        sync: _extends({}, state.sync, {
 	                            seed: Math.random()
 	                        })
