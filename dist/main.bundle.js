@@ -132,7 +132,7 @@
 	    _createClass(Main, [{
 	        key: 'componentWillUpdate',
 	        value: function componentWillUpdate(nextProps, nextState) {
-	            if (JSON.stringify(nextState) != JSON.stringify(this.state)) {
+	            if (JSON.stringify(nextState.sync) != JSON.stringify(this.state.sync)) {
 	                if (this.sync && this.state.sync.seed && nextState.user.isModerator) {
 	                    var onComplete = function onComplete(error) {
 	                        if (error) {
@@ -238,9 +238,11 @@
 	                                depth: val.depth,
 	                                seed: val.seed
 	                            };
-	                            _this3.setState({
-	                                sync: syncVals
-	                            });
+	                            if (JSON.stringify(syncVals) != JSON.stringify(_this3.state.sync)) {
+	                                _this3.setState({
+	                                    sync: syncVals
+	                                });
+	                            }
 	                        } else if (_this3.state.user.isModerator) {
 	                            _this3.setState(function (state) {
 	                                return _extends({}, state, {

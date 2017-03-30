@@ -44,7 +44,7 @@ class Main extends React.Component {
     }
 
     componentWillUpdate(nextProps, nextState){
-        if(JSON.stringify(nextState) != JSON.stringify(this.state)){
+        if(JSON.stringify(nextState.sync) != JSON.stringify(this.state.sync)){
             if(this.sync && this.state.sync.seed && nextState.user.isModerator){
                 var onComplete = function(error) {
                   if (error) {
@@ -165,9 +165,11 @@ class Main extends React.Component {
                             depth: val.depth,
                             seed: val.seed
                         };
-                        this.setState({
-                            sync: syncVals
-                        });
+                        if(JSON.stringify(syncVals) != JSON.stringify(this.state.sync)){
+                            this.setState({
+                                sync: syncVals
+                            });
+                        }
                     }else if(this.state.user.isModerator){
                         this.setState((state) => {
                             return {
