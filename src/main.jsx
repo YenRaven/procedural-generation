@@ -157,12 +157,17 @@ class Main extends React.Component {
             this.scene.addEventListener("connected", () => {
                 this.sync = this.scene.systems['sync-system'].connection;
                 var callback = (data) => {
-                    if(data.val().seed){
-                        if(!(JSON.stringify(data.val()) === JSON.stringify(this.state.sync))){
-                            this.setState({
-                                sync: data.val()
-                            });
-                        }
+                    let val = data.val();
+                    if(val.seed){
+                        let syncVals = {
+                            width,
+                            height,
+                            depth,
+                            seed
+                        } = val;
+                        this.setState({
+                            sync: syncVals
+                        });
                     }else if(this.state.user.isModerator){
                         this.setState((state) => {
                             return {

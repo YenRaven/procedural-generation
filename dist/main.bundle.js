@@ -230,12 +230,14 @@
 	                this.scene.addEventListener("connected", function () {
 	                    _this3.sync = _this3.scene.systems['sync-system'].connection;
 	                    var callback = function callback(data) {
-	                        if (data.val().seed) {
-	                            if (!(JSON.stringify(data.val()) === JSON.stringify(_this3.state.sync))) {
-	                                _this3.setState({
-	                                    sync: data.val()
-	                                });
-	                            }
+	                        var val = data.val();
+	                        if (val.seed) {
+	                            var _val;
+	
+	                            var syncVals = (_val = val, width = _val.width, height = _val.height, depth = _val.depth, seed = _val.seed, _val);
+	                            _this3.setState({
+	                                sync: syncVals
+	                            });
 	                        } else if (_this3.state.user.isModerator) {
 	                            _this3.setState(function (state) {
 	                                return _extends({}, state, {
