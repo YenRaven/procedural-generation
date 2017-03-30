@@ -43,22 +43,27 @@ class Main extends React.Component {
         //this.generateWorld();
     }
 
-    componentWillUpdate(nextProps, nextState){
+    shouldComponentUpdate(nextProps, nextState){
         if(JSON.stringify(nextState.sync) != JSON.stringify(this.state.sync)){
-            if(this.sync && this.state.sync.seed && nextState.user.isModerator){
-                var onComplete = function(error) {
-                  if (error) {
-                    console.log('Synchronization failed');
-                  } else {
-                    console.log('Synchronization succeeded');
-                  }
-                };
-                this.sync.instance.set(nextState.sync, onComplete);
-            }
-            if(nextState.sync.seed != this.state.sync.seed){
-                this.simplex = new SimplexNoise((new Rand(nextState.sync.seed)).random);
-                this.generateWorld();
-            }
+            return true;
+        }
+        return false;
+    }
+
+    componentWillUpdate(nextProps, nextState){
+        if(this.sync && this.state.sync.seed && nextState.user.isModerator){
+            var onComplete = function(error) {
+              if (error) {
+                console.log('Synchronization failed');
+              } else {
+                console.log('Synchronization succeeded');
+              }
+            };
+            this.sync.instance.set(nextState.sync, onComplete);
+        }
+        if(nextState.sync.seed != this.state.sync.seed){
+            this.simplex = new SimplexNoise((new Rand(nextState.sync.seed)).random);
+            this.generateWorld();
         }
     }
 
@@ -108,7 +113,7 @@ class Main extends React.Component {
             {
                 this.boxSizes.map((isSize, id)=>{
                     if(isSize){
-                        return <a-entity id={`blockMerge${id}`}></a-entity>
+                        return <a-entity key={id} id={`blockMerge${id}`} ref={(merged) => {this.merged[id] = merged;}}></a-entity>
                     }else{
                         return null;
                     }

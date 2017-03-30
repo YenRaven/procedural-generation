@@ -130,23 +130,29 @@
 	    }
 	
 	    _createClass(Main, [{
+	        key: 'shouldComponentUpdate',
+	        value: function shouldComponentUpdate(nextProps, nextState) {
+	            if (JSON.stringify(nextState.sync) != JSON.stringify(this.state.sync)) {
+	                return true;
+	            }
+	            return false;
+	        }
+	    }, {
 	        key: 'componentWillUpdate',
 	        value: function componentWillUpdate(nextProps, nextState) {
-	            if (JSON.stringify(nextState.sync) != JSON.stringify(this.state.sync)) {
-	                if (this.sync && this.state.sync.seed && nextState.user.isModerator) {
-	                    var onComplete = function onComplete(error) {
-	                        if (error) {
-	                            console.log('Synchronization failed');
-	                        } else {
-	                            console.log('Synchronization succeeded');
-	                        }
-	                    };
-	                    this.sync.instance.set(nextState.sync, onComplete);
-	                }
-	                if (nextState.sync.seed != this.state.sync.seed) {
-	                    this.simplex = new _simplexNoise2.default(new _randomSeed2.default(nextState.sync.seed).random);
-	                    this.generateWorld();
-	                }
+	            if (this.sync && this.state.sync.seed && nextState.user.isModerator) {
+	                var onComplete = function onComplete(error) {
+	                    if (error) {
+	                        console.log('Synchronization failed');
+	                    } else {
+	                        console.log('Synchronization succeeded');
+	                    }
+	                };
+	                this.sync.instance.set(nextState.sync, onComplete);
+	            }
+	            if (nextState.sync.seed != this.state.sync.seed) {
+	                this.simplex = new _simplexNoise2.default(new _randomSeed2.default(nextState.sync.seed).random);
+	                this.generateWorld();
 	            }
 	        }
 	    }, {
@@ -194,7 +200,9 @@
 	                }) : null,
 	                this.boxSizes.map(function (isSize, id) {
 	                    if (isSize) {
-	                        return _react2.default.createElement('a-entity', { id: 'blockMerge' + id });
+	                        return _react2.default.createElement('a-entity', { key: id, id: 'blockMerge' + id, ref: function ref(merged) {
+	                                _this2.merged[id] = merged;
+	                            } });
 	                    } else {
 	                        return null;
 	                    }
