@@ -158,7 +158,7 @@ class Main extends React.Component {
                 this.sync = this.scene.systems['sync-system'].connection;
                 var callback = (data) => {
                     if(data.val().seed){
-                        if(!(JSON.stringify(data) === JSON.stringify(this.state.sync))){
+                        if(!(JSON.stringify(data.val()) === JSON.stringify(this.state.sync))){
                             this.setState({
                                 sync: data.val()
                             });

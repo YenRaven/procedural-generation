@@ -231,7 +231,7 @@
 	                    _this3.sync = _this3.scene.systems['sync-system'].connection;
 	                    var callback = function callback(data) {
 	                        if (data.val().seed) {
-	                            if (!(JSON.stringify(data) === JSON.stringify(_this3.state.sync))) {
+	                            if (!(JSON.stringify(data.val()) === JSON.stringify(_this3.state.sync))) {
 	                                _this3.setState({
 	                                    sync: data.val()
 	                                });
