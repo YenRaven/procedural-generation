@@ -100,6 +100,42 @@
 	            });
 	        };
 	
+	        _this.nextWidth = function (inc) {
+	            return function () {
+	                _this.setState(function (state) {
+	                    return _extends({}, state, {
+	                        sync: _extends({}, state.sync, {
+	                            width: inc ? state.sync.width * 2 : state.sync.width / 2
+	                        })
+	                    });
+	                });
+	            };
+	        };
+	
+	        _this.nextHeight = function (inc) {
+	            return function () {
+	                _this.setState(function (state) {
+	                    return _extends({}, state, {
+	                        sync: _extends({}, state.sync, {
+	                            height: inc ? state.sync.height * 2 : state.sync.height / 2
+	                        })
+	                    });
+	                });
+	            };
+	        };
+	
+	        _this.nextDepth = function (inc) {
+	            return function () {
+	                _this.setState(function (state) {
+	                    return _extends({}, state, {
+	                        sync: _extends({}, state.sync, {
+	                            depth: inc ? state.sync.depth * 2 : state.sync.depth / 2
+	                        })
+	                    });
+	                });
+	            };
+	        };
+	
 	        _this.simplex = new _simplexNoise2.default();
 	        _this.terrainTextures = [];
 	        _this.terrain = [];
@@ -110,9 +146,9 @@
 	        _this.state = {
 	            user: false,
 	            sync: {
-	                width: 24,
-	                height: 24,
-	                depth: 24,
+	                width: 8,
+	                height: 8,
+	                depth: 8,
 	                seed: null
 	            }
 	        };
@@ -152,7 +188,9 @@
 	            }
 	            if (nextState.sync.seed != this.state.sync.seed) {
 	                this.simplex = new _simplexNoise2.default(new _randomSeed2.default(nextState.sync.seed).random);
-	                this.generateWorld();
+	            }
+	            if (JSON.stringify(nextState.sync) != JSON.stringify(this.state.sync)) {
+	                this.generateWorld(nextState.sync.width, nextState.sync.height, nextState.sync.depth);
 	            }
 	        }
 	    }, {
@@ -190,14 +228,74 @@
 	                            }, id: 'terrain' + id }) : null;
 	                    })
 	                ),
-	                this.state.user && this.state.user.isModerator ? _react2.default.createElement(TextControlBtn, {
+	                this.state.user && this.state.user.isModerator ? [_react2.default.createElement(TextControlBtn, {
 	                    position: new THREE.Vector3(-1, 0.4, -1.5),
 	                    color: '#888888',
 	                    value: 'New',
 	                    width: '0.5',
 	                    height: '0.1',
 	                    onClick: this.newWorld
-	                }) : null,
+	                }), _react2.default.createElement(TextControlBtn, {
+	                    position: new THREE.Vector3(-1, 0.29, -1.5),
+	                    color: '#884444',
+	                    value: 'Width:' + this.state.sync.width,
+	                    width: '0.3',
+	                    height: '0.1'
+	                }), _react2.default.createElement(TextControlBtn, {
+	                    position: new THREE.Vector3(-0.75, 0.29, -1.5),
+	                    color: '#884444',
+	                    value: '+',
+	                    width: '0.1',
+	                    height: '0.1',
+	                    onClick: this.nextWidth(true)
+	                }), _react2.default.createElement(TextControlBtn, {
+	                    position: new THREE.Vector3(-1.25, 0.29, -1.5),
+	                    color: '#884444',
+	                    value: '-',
+	                    width: '0.1',
+	                    height: '0.1',
+	                    onClick: this.nextWidth(false)
+	                }), _react2.default.createElement(TextControlBtn, {
+	                    position: new THREE.Vector3(-1, 0.18, -1.5),
+	                    color: '#448844',
+	                    value: 'Height:' + this.state.sync.height,
+	                    width: '0.3',
+	                    height: '0.1'
+	                }), _react2.default.createElement(TextControlBtn, {
+	                    position: new THREE.Vector3(-0.75, 0.18, -1.5),
+	                    color: '#448844',
+	                    value: '+',
+	                    width: '0.1',
+	                    height: '0.1',
+	                    onClick: this.nextHeight(true)
+	                }), _react2.default.createElement(TextControlBtn, {
+	                    position: new THREE.Vector3(-1.25, 0.18, -1.5),
+	                    color: '#448844',
+	                    value: '-',
+	                    width: '0.1',
+	                    height: '0.1',
+	                    onClick: this.nextHeight(false)
+	                }), _react2.default.createElement(TextControlBtn, {
+	                    position: new THREE.Vector3(-1, 0.07, -1.5),
+	                    color: '#444488',
+	                    value: 'Depth:' + this.state.sync.depth,
+	                    width: '0.3',
+	                    height: '0.1'
+	                }), _react2.default.createElement(TextControlBtn, {
+	                    position: new THREE.Vector3(-0.75, 0.07, -1.5),
+	                    color: '#444488',
+	                    value: '+',
+	                    width: '0.1',
+	                    height: '0.1',
+	                    onClick: this.nextDepth(true)
+	                }), _react2.default.createElement(TextControlBtn, {
+	                    position: new THREE.Vector3(-1.25, 0.07, -1.5),
+	                    color: '#444488',
+	                    value: '-',
+	                    width: '0.1',
+	                    height: '0.1',
+	                    onClick: this.nextDepth(false)
+	                })] : null,
 	                this.boxSizes.map(function (isSize, id) {
 	                    if (isSize) {
 	                        return _react2.default.createElement('a-entity', { key: id, id: 'blockMerge' + id, ref: function ref(merged) {
@@ -282,7 +380,7 @@
 	    }, {
 	        key: 'generateTexture',
 	        value: function generateTexture(height) {
-	            var uv128 = 1 / (height * 2 + 1);
+	            //var uv16 = 1 / (height * 2 + 1);
 	            var uvH = height / (height * 2 + 1);
 	
 	            var uv = {
@@ -316,19 +414,15 @@
 	            geometry.faceVertexUvs[0][11] = [uv.back[1], uv.back[2], uv.back[3]];
 	
 	            return {
-	                width: 256,
-	                height: 128 + 128 * height * 2,
+	                width: 32,
+	                height: 16 + 16 * height * 2,
 	                geometry: geometry,
 	                uv: uv
 	            };
 	        }
 	    }, {
 	        key: 'generateWorld',
-	        value: function generateWorld() {
-	            var width = this.state.sync.width;
-	            var height = this.state.sync.height;
-	            var depth = this.state.sync.depth;
-	
+	        value: function generateWorld(width, height, depth) {
 	            var terrain = [];
 	            for (var x = 0; x < width; x++) {
 	                terrain[x] = [];
@@ -340,12 +434,54 @@
 	                        var t = this.simplex.noise3D(x / 16, y / 16, z / 16) * 0.5 + 0.5;
 	                        t += this.simplex.noise3D(x / 32, y / 32, z / 32) * 0.5 + 0.5;
 	                        t = t / 2 > 0.5;
+	
+	                        // let a1, a2, a3, a4, a5, a6;
+	                        // a1 = a2 = a3 = a4 = a5 = a6 = false;
+	                        //
+	                        // if(x-1 >= 0){
+	                        //     a1 = this.simplex.noise3D((x-1)/16, y/16, z/16) * 0.5 + 0.5;
+	                        //     a1 += this.simplex.noise3D((x-1)/32, y/32, z/32) * 0.5 + 0.5;
+	                        //     a1 = (a1/2) > 0.5;
+	                        // }
+	                        //
+	                        // if(y-1 >= 0){
+	                        //     a2 = this.simplex.noise3D(x/16, (y-1)/16, z/16) * 0.5 + 0.5;
+	                        //     a2 += this.simplex.noise3D(x/32, (y-1)/32, z/32) * 0.5 + 0.5;
+	                        //     a2 = (a2/2) > 0.5;
+	                        // }
+	                        //
+	                        // if(x+1 < width){
+	                        //     a3 = this.simplex.noise3D((x+1)/16, y/16, z/16) * 0.5 + 0.5;
+	                        //     a3 += this.simplex.noise3D((x+1)/32, y/32, z/32) * 0.5 + 0.5;
+	                        //     a3 = (a3/2) > 0.5;
+	                        // }
+	                        //
+	                        // if(y+1 < height){
+	                        //     a4 = this.simplex.noise3D(x/16, (y+1)/16, z/16) * 0.5 + 0.5;
+	                        //     a4 += this.simplex.noise3D(x/32, (y+1)/32, z/32) * 0.5 + 0.5;
+	                        //     a4 = (a4/2) > 0.5;
+	                        // }
+	                        //
+	                        // if(z-1 >= 0){
+	                        //     a5 = this.simplex.noise3D(x/16, y/16, (z-1)/16) * 0.5 + 0.5;
+	                        //     a5 += this.simplex.noise3D(x/32, y/32, (z-1)/32) * 0.5 + 0.5;
+	                        //     a5 = (a5/2) > 0.5;
+	                        // }
+	                        //
+	                        // if(z+1 < depth){
+	                        //     a6 = this.simplex.noise3D(x/16, y/16, (z+1)/16) * 0.5 + 0.5;
+	                        //     a6 += this.simplex.noise3D(x/32, y/32, (z+1)/32) * 0.5 + 0.5;
+	                        //     a6 = (a6/2) > 0.5;
+	                        // }
+	
 	                        if (!blockStart) {
+	                            //if(t && !(a1 && a2 && a3 && a4 && a5 && a6)){
 	                            if (t) {
 	                                blockStart = z;
 	                            }
 	                        } else {
-	                            if (!t || z === depth - 1) {
+	                            //if(!t || (a1 && a2 && a3 && a4 && a5 && a6) || z === depth){
+	                            if (!t || z === depth) {
 	                                terrain[x][y].push({ start: blockStart, end: z });
 	                                var h = z - blockStart;
 	                                this.boxSizes[h] = true;
@@ -375,34 +511,34 @@
 	
 	                    //top bottom
 	                    if (_this4.refs.topbottom.width > 0) {
-	                        ctx.drawImage(_this4.refs.topbottom, 0, 0, 256, 128);
+	                        ctx.drawImage(_this4.refs.topbottom, 0, 0, 32, 16);
 	                    } else {
 	                        topBottomLoad.push(function (ctx) {
 	                            return function () {
-	                                ctx.drawImage(_this4.refs.topbottom, 0, 0, 256, 128);
+	                                ctx.drawImage(_this4.refs.topbottom, 0, 0, 32, 16);
 	                            };
 	                        }(ctx));
 	                    }
 	
 	                    //caps
 	                    if (_this4.refs.cap.width > 0) {
-	                        ctx.drawImage(_this4.refs.cap, 0, 128, 128, 128);
-	                        ctx.drawImage(_this4.refs.cap, 128, 128, 128, 128);
-	                        ctx.drawImage(_this4.refs.cap, 0, 128 + 128 * height, 128, 128);
-	                        ctx.drawImage(_this4.refs.cap, 128, 128 + 128 * height, 128, 128);
+	                        ctx.drawImage(_this4.refs.cap, 0, 16, 16, 16);
+	                        ctx.drawImage(_this4.refs.cap, 16, 16, 16, 16);
+	                        ctx.drawImage(_this4.refs.cap, 0, 16 + 16 * height, 16, 16);
+	                        ctx.drawImage(_this4.refs.cap, 16, 16 + 16 * height, 16, 16);
 	                        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-	                        //ctx.fillRect(0, 128, 256, 128);
-	                        ctx.fillRect(0, 128 + 128 * height, 256, 128);
+	                        //ctx.fillRect(0, 16, 32, 16);
+	                        ctx.fillRect(0, 16 + 16 * height, 32, 16);
 	                    } else {
 	                        capLoad.push(function (ctx) {
 	                            return function () {
-	                                ctx.drawImage(_this4.refs.cap, 0, 128, 128, 128);
-	                                ctx.drawImage(_this4.refs.cap, 128, 128, 128, 128);
-	                                ctx.drawImage(_this4.refs.cap, 0, 128 + 128 * height, 128, 128);
-	                                ctx.drawImage(_this4.refs.cap, 128, 128 + 128 * height, 128, 128);
+	                                ctx.drawImage(_this4.refs.cap, 0, 16, 16, 16);
+	                                ctx.drawImage(_this4.refs.cap, 16, 16, 16, 16);
+	                                ctx.drawImage(_this4.refs.cap, 0, 16 + 16 * height, 16, 16);
+	                                ctx.drawImage(_this4.refs.cap, 16, 16 + 16 * height, 16, 16);
 	                                ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-	                                //ctx.fillRect(0, 128, 256, 128);
-	                                ctx.fillRect(0, 128 + 128 * height, 256, 128);
+	                                //ctx.fillRect(0, 16, 32, 16);
+	                                ctx.fillRect(0, 16 + 16 * height, 32, 16);
 	                            };
 	                        }(ctx));
 	                    }
@@ -410,26 +546,26 @@
 	                    //sides
 	                    if (_this4.refs.dirt.width > 0) {
 	                        for (var i = 1; i < height; i++) {
-	                            ctx.drawImage(_this4.refs.dirt, 0, 128 + 128 * i, 128, 128);
-	                            ctx.drawImage(_this4.refs.dirt, 128, 128 + 128 * i, 128, 128);
-	                            ctx.drawImage(_this4.refs.dirt, 0, 128 + 128 * height + 128 * i, 128, 128);
-	                            ctx.drawImage(_this4.refs.dirt, 128, 128 + 128 * height + 128 * i, 128, 128);
+	                            ctx.drawImage(_this4.refs.dirt, 0, 16 + 16 * i, 16, 16);
+	                            ctx.drawImage(_this4.refs.dirt, 16, 16 + 16 * i, 16, 16);
+	                            ctx.drawImage(_this4.refs.dirt, 0, 16 + 16 * height + 16 * i, 16, 16);
+	                            ctx.drawImage(_this4.refs.dirt, 16, 16 + 16 * height + 16 * i, 16, 16);
 	                        }
 	                        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-	                        //ctx.fillRect(0, 256, 256, 128 * (height-1));
-	                        ctx.fillRect(0, 256 + 128 * height, 256, 128 * (height - 1));
+	                        //ctx.fillRect(0, 32, 32, 16 * (height-1));
+	                        ctx.fillRect(0, 32 + 16 * height, 32, 16 * (height - 1));
 	                    } else {
 	                        dirtLoad.push(function (ctx) {
 	                            return function () {
 	                                for (var i = 1; i < height; i++) {
-	                                    ctx.drawImage(_this4.refs.dirt, 0, 128 + 128 * i, 128, 128);
-	                                    ctx.drawImage(_this4.refs.dirt, 128, 128 + 128 * i, 128, 128);
-	                                    ctx.drawImage(_this4.refs.dirt, 0, 128 + 128 * height + 128 * i, 128, 128);
-	                                    ctx.drawImage(_this4.refs.dirt, 128, 128 + 128 * height + 128 * i, 128, 128);
+	                                    ctx.drawImage(_this4.refs.dirt, 0, 16 + 16 * i, 16, 16);
+	                                    ctx.drawImage(_this4.refs.dirt, 16, 16 + 16 * i, 16, 16);
+	                                    ctx.drawImage(_this4.refs.dirt, 0, 16 + 16 * height + 16 * i, 16, 16);
+	                                    ctx.drawImage(_this4.refs.dirt, 16, 16 + 16 * height + 16 * i, 16, 16);
 	                                }
 	                                ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-	                                //ctx.fillRect(0, 256, 256, 128 * (height-1));
-	                                ctx.fillRect(0, 256 + 128 * height, 256, 128 * (height - 1));
+	                                //ctx.fillRect(0, 32, 32, 16 * (height-1));
+	                                ctx.fillRect(0, 32 + 16 * height, 32, 16 * (height - 1));
 	                            };
 	                        }(ctx));
 	                    }
@@ -495,7 +631,7 @@
 	                    'n-cockpit-parent': true
 	                },
 	                _react2.default.createElement('a-entity', {
-	                    position: '0 0 0.03',
+	                    position: '0 0 0.01',
 	                    'n-text': 'text: ' + this.props.value + '; fontSize: 1; horizontalAlign: center;',
 	                    'n-cockpit-parent': true
 	                })

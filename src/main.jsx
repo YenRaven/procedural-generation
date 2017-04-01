@@ -25,9 +25,9 @@ class Main extends React.Component {
         this.state = {
             user:false,
             sync:{
-                width: 24,
-                height: 24,
-                depth: 24,
+                width: 8,
+                height: 8,
+                depth: 8,
                 seed: null
             }
         }
@@ -63,7 +63,9 @@ class Main extends React.Component {
         }
         if(nextState.sync.seed != this.state.sync.seed){
             this.simplex = new SimplexNoise((new Rand(nextState.sync.seed)).random);
-            this.generateWorld();
+        }
+        if(JSON.stringify(nextState.sync) != JSON.stringify(this.state.sync)){
+            this.generateWorld(nextState.sync.width, nextState.sync.height, nextState.sync.depth);
         }
     }
 
@@ -99,7 +101,7 @@ class Main extends React.Component {
                     })
                 }
             </a-assets>
-            {(this.state.user && this.state.user.isModerator) ? (
+            {(this.state.user && this.state.user.isModerator) ? [
                 <TextControlBtn
                     position={new THREE.Vector3(-1, 0.4, -1.5)}
                     color="#888888"
@@ -107,8 +109,80 @@ class Main extends React.Component {
                     width="0.5"
                     height="0.1"
                     onClick={ this.newWorld }
+                />,
+
+                <TextControlBtn
+                    position={new THREE.Vector3(-1, 0.29, -1.5)}
+                    color="#884444"
+                    value={`Width:${this.state.sync.width}`}
+                    width="0.3"
+                    height="0.1"
+                />,
+                <TextControlBtn
+                    position={new THREE.Vector3(-0.75, 0.29, -1.5)}
+                    color="#884444"
+                    value="+"
+                    width="0.1"
+                    height="0.1"
+                    onClick={this.nextWidth(true)}
+                />,
+                <TextControlBtn
+                    position={new THREE.Vector3(-1.25, 0.29, -1.5)}
+                    color="#884444"
+                    value="-"
+                    width="0.1"
+                    height="0.1"
+                    onClick={this.nextWidth(false)}
+                />,
+
+                <TextControlBtn
+                    position={new THREE.Vector3(-1, 0.18, -1.5)}
+                    color="#448844"
+                    value={`Height:${this.state.sync.height}`}
+                    width="0.3"
+                    height="0.1"
+                />,
+                <TextControlBtn
+                    position={new THREE.Vector3(-0.75, 0.18, -1.5)}
+                    color="#448844"
+                    value="+"
+                    width="0.1"
+                    height="0.1"
+                    onClick={this.nextHeight(true)}
+                />,
+                <TextControlBtn
+                    position={new THREE.Vector3(-1.25, 0.18, -1.5)}
+                    color="#448844"
+                    value="-"
+                    width="0.1"
+                    height="0.1"
+                    onClick={this.nextHeight(false)}
+                />,
+
+                <TextControlBtn
+                    position={new THREE.Vector3(-1, 0.07, -1.5)}
+                    color="#444488"
+                    value={`Depth:${this.state.sync.depth}`}
+                    width="0.3"
+                    height="0.1"
+                />,
+                <TextControlBtn
+                    position={new THREE.Vector3(-0.75, 0.07, -1.5)}
+                    color="#444488"
+                    value="+"
+                    width="0.1"
+                    height="0.1"
+                    onClick={this.nextDepth(true)}
+                />,
+                <TextControlBtn
+                    position={new THREE.Vector3(-1.25, 0.07, -1.5)}
+                    color="#444488"
+                    value="-"
+                    width="0.1"
+                    height="0.1"
+                    onClick={this.nextDepth(false)}
                 />
-            ) : null
+            ] : null
             }
             {
                 this.boxSizes.map((isSize, id)=>{
@@ -152,6 +226,42 @@ class Main extends React.Component {
                 sync: {
                     ...state.sync,
                     seed:Math.random()*999999999
+                }
+            }
+        })
+    }
+
+    nextWidth = (inc) => () => {
+        this.setState((state)=>{
+            return{
+                ...state,
+                sync: {
+                    ...state.sync,
+                    width: inc? state.sync.width * 2 : state.sync.width / 2
+                }
+            }
+        })
+    }
+
+    nextHeight = (inc) => () => {
+        this.setState((state)=>{
+            return{
+                ...state,
+                sync: {
+                    ...state.sync,
+                    height: inc? state.sync.height * 2 : state.sync.height / 2
+                }
+            }
+        })
+    }
+
+    nextDepth = (inc) => () => {
+        this.setState((state)=>{
+            return{
+                ...state,
+                sync: {
+                    ...state.sync,
+                    depth: inc? state.sync.depth * 2 : state.sync.depth / 2
                 }
             }
         })
@@ -208,7 +318,7 @@ class Main extends React.Component {
     }
 
     generateTexture(height){
-        var uv128 = 1 / (height * 2 + 1);
+        //var uv16 = 1 / (height * 2 + 1);
         var uvH = height / (height * 2 + 1);
 
         var uv = {
@@ -272,18 +382,14 @@ class Main extends React.Component {
         geometry.faceVertexUvs[0][11] = [uv.back[1], uv.back[2], uv.back[3]]
 
         return {
-            width:256,
-            height: 128 + 128 * height * 2,
+            width:32,
+            height: 16 + 16 * height * 2,
             geometry: geometry,
             uv: uv
         };
     }
 
-    generateWorld(){
-        const width = this.state.sync.width;
-        const height = this.state.sync.height;
-        const depth = this.state.sync.depth;
-
+    generateWorld(width, height, depth){
         var terrain = [];
         for(var x = 0; x < width; x++){
             terrain[x] = [];
@@ -295,12 +401,55 @@ class Main extends React.Component {
                     var t = this.simplex.noise3D(x/16, y/16, z/16) * 0.5 + 0.5;
                     t += this.simplex.noise3D(x/32, y/32, z/32) * 0.5 + 0.5;
                     t = (t/2) > 0.5;
+
+
+                    // let a1, a2, a3, a4, a5, a6;
+                    // a1 = a2 = a3 = a4 = a5 = a6 = false;
+                    //
+                    // if(x-1 >= 0){
+                    //     a1 = this.simplex.noise3D((x-1)/16, y/16, z/16) * 0.5 + 0.5;
+                    //     a1 += this.simplex.noise3D((x-1)/32, y/32, z/32) * 0.5 + 0.5;
+                    //     a1 = (a1/2) > 0.5;
+                    // }
+                    //
+                    // if(y-1 >= 0){
+                    //     a2 = this.simplex.noise3D(x/16, (y-1)/16, z/16) * 0.5 + 0.5;
+                    //     a2 += this.simplex.noise3D(x/32, (y-1)/32, z/32) * 0.5 + 0.5;
+                    //     a2 = (a2/2) > 0.5;
+                    // }
+                    //
+                    // if(x+1 < width){
+                    //     a3 = this.simplex.noise3D((x+1)/16, y/16, z/16) * 0.5 + 0.5;
+                    //     a3 += this.simplex.noise3D((x+1)/32, y/32, z/32) * 0.5 + 0.5;
+                    //     a3 = (a3/2) > 0.5;
+                    // }
+                    //
+                    // if(y+1 < height){
+                    //     a4 = this.simplex.noise3D(x/16, (y+1)/16, z/16) * 0.5 + 0.5;
+                    //     a4 += this.simplex.noise3D(x/32, (y+1)/32, z/32) * 0.5 + 0.5;
+                    //     a4 = (a4/2) > 0.5;
+                    // }
+                    //
+                    // if(z-1 >= 0){
+                    //     a5 = this.simplex.noise3D(x/16, y/16, (z-1)/16) * 0.5 + 0.5;
+                    //     a5 += this.simplex.noise3D(x/32, y/32, (z-1)/32) * 0.5 + 0.5;
+                    //     a5 = (a5/2) > 0.5;
+                    // }
+                    //
+                    // if(z+1 < depth){
+                    //     a6 = this.simplex.noise3D(x/16, y/16, (z+1)/16) * 0.5 + 0.5;
+                    //     a6 += this.simplex.noise3D(x/32, y/32, (z+1)/32) * 0.5 + 0.5;
+                    //     a6 = (a6/2) > 0.5;
+                    // }
+
                     if(!blockStart){
+                        //if(t && !(a1 && a2 && a3 && a4 && a5 && a6)){
                         if(t){
                             blockStart = z;
                         }
                     }else{
-                        if(!t || z === depth-1){
+                        //if(!t || (a1 && a2 && a3 && a4 && a5 && a6) || z === depth){
+                        if(!t || z === depth){
                             terrain[x][y].push({start:blockStart, end:z});
                             var h = z - blockStart;
                             this.boxSizes[h] = true;
@@ -327,59 +476,60 @@ class Main extends React.Component {
 
                 //top bottom
                 if(this.refs.topbottom.width>0){
-                    ctx.drawImage(this.refs.topbottom, 0, 0, 256, 128);
+                    ctx.drawImage(this.refs.topbottom, 0, 0, 32, 16);
                 }else{
                     topBottomLoad.push(((ctx) => () => {
-                        ctx.drawImage(this.refs.topbottom, 0, 0, 256, 128);
+                        ctx.drawImage(this.refs.topbottom, 0, 0, 32, 16);
                     })(ctx));
                 }
 
                 //caps
                 if(this.refs.cap.width>0){
-                    ctx.drawImage(this.refs.cap, 0, 128, 128, 128);
-                    ctx.drawImage(this.refs.cap, 128, 128, 128, 128);
-                    ctx.drawImage(this.refs.cap, 0, 128 + 128 * height, 128, 128);
-                    ctx.drawImage(this.refs.cap, 128, 128 + 128 * height, 128, 128);
+                    ctx.drawImage(this.refs.cap, 0, 16, 16, 16);
+                    ctx.drawImage(this.refs.cap, 16, 16, 16, 16);
+                    ctx.drawImage(this.refs.cap, 0, 16 + 16 * height, 16, 16);
+                    ctx.drawImage(this.refs.cap, 16, 16 + 16 * height, 16, 16);
                     ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
-                    //ctx.fillRect(0, 128, 256, 128);
-                    ctx.fillRect(0, 128 + 128 * height, 256, 128);
+                    //ctx.fillRect(0, 16, 32, 16);
+                    ctx.fillRect(0, 16 + 16 * height, 32, 16);
                 }else{
                     capLoad.push(((ctx) => () => {
-                        ctx.drawImage(this.refs.cap, 0, 128, 128, 128);
-                        ctx.drawImage(this.refs.cap, 128, 128, 128, 128);
-                        ctx.drawImage(this.refs.cap, 0, 128 + 128 * height, 128, 128);
-                        ctx.drawImage(this.refs.cap, 128, 128 + 128 * height, 128, 128);
+                        ctx.drawImage(this.refs.cap, 0, 16, 16, 16);
+                        ctx.drawImage(this.refs.cap, 16, 16, 16, 16);
+                        ctx.drawImage(this.refs.cap, 0, 16 + 16 * height, 16, 16);
+                        ctx.drawImage(this.refs.cap, 16, 16 + 16 * height, 16, 16);
                         ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
-                        //ctx.fillRect(0, 128, 256, 128);
-                        ctx.fillRect(0, 128 + 128 * height, 256, 128);
+                        //ctx.fillRect(0, 16, 32, 16);
+                        ctx.fillRect(0, 16 + 16 * height, 32, 16);
                     })(ctx))
                 }
 
                 //sides
                 if(this.refs.dirt.width>0){
                     for(var i = 1; i < height; i++){
-                        ctx.drawImage(this.refs.dirt, 0, 128 + 128 * i, 128, 128);
-                        ctx.drawImage(this.refs.dirt, 128, 128 + 128 * i, 128, 128);
-                        ctx.drawImage(this.refs.dirt, 0, 128 + 128 * height + 128 * i, 128, 128);
-                        ctx.drawImage(this.refs.dirt, 128, 128 + 128 * height + 128 * i, 128, 128);
+                        ctx.drawImage(this.refs.dirt, 0, 16 + 16 * i, 16, 16);
+                        ctx.drawImage(this.refs.dirt, 16, 16 + 16 * i, 16, 16);
+                        ctx.drawImage(this.refs.dirt, 0, 16 + 16 * height + 16 * i, 16, 16);
+                        ctx.drawImage(this.refs.dirt, 16, 16 + 16 * height + 16 * i, 16, 16);
                     }
                     ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
-                    //ctx.fillRect(0, 256, 256, 128 * (height-1));
-                    ctx.fillRect(0, 256 + 128 * height, 256, 128 * (height-1));
+                    //ctx.fillRect(0, 32, 32, 16 * (height-1));
+                    ctx.fillRect(0, 32 + 16 * height, 32, 16 * (height-1));
                 }else{
                     dirtLoad.push(((ctx) => () => {
                         for(var i = 1; i < height; i++){
-                            ctx.drawImage(this.refs.dirt, 0, 128 + 128 * i, 128, 128);
-                            ctx.drawImage(this.refs.dirt, 128, 128 + 128 * i, 128, 128);
-                            ctx.drawImage(this.refs.dirt, 0, 128 + 128 * height + 128 * i, 128, 128);
-                            ctx.drawImage(this.refs.dirt, 128, 128 + 128 * height + 128 * i, 128, 128);
+                            ctx.drawImage(this.refs.dirt, 0, 16 + 16 * i, 16, 16);
+                            ctx.drawImage(this.refs.dirt, 16, 16 + 16 * i, 16, 16);
+                            ctx.drawImage(this.refs.dirt, 0, 16 + 16 * height + 16 * i, 16, 16);
+                            ctx.drawImage(this.refs.dirt, 16, 16 + 16 * height + 16 * i, 16, 16);
                         }
                         ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
-                        //ctx.fillRect(0, 256, 256, 128 * (height-1));
-                        ctx.fillRect(0, 256 + 128 * height, 256, 128 * (height-1));
+                        //ctx.fillRect(0, 32, 32, 16 * (height-1));
+                        ctx.fillRect(0, 32 + 16 * height, 32, 16 * (height-1));
                     })(ctx));
                 }
             }
+
 
             mesh[height] = new THREE.Mesh(
                 (new THREE.BufferGeometry()).fromGeometry(t.geometry),
@@ -426,7 +576,7 @@ class TextControlBtn extends React.Component {
                 n-cockpit-parent
             >
                 <a-entity
-                    position="0 0 0.03"
+                    position="0 0 0.01"
                     n-text={`text: ${this.props.value}; fontSize: 1; horizontalAlign: center;`}
                     n-cockpit-parent
                 />
