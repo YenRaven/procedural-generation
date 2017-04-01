@@ -212,8 +212,7 @@ class Main extends React.Component {
                                         }
                                     }}
                                     key={`${position.x}${position.y}${position.z}`}
-                                    position={`${position.x} ${position.y} ${position.z}`}
-                                    n-box-collider={`size: 1 ${height} 1; type: environment;`} />;
+                                    position={`${position.x} ${position.y} ${position.z}`} />;
                         })
                     })
                 })
@@ -318,6 +317,9 @@ class Main extends React.Component {
 
     componentDidUpdate(){
         this.meshBoxes();
+        this.box.forEach((box) => {
+            box.el.setAttribute("n-box-collider", `size: 1 ${box.height} 1; type: environment;`);
+        });
     }
 
     generateTexture(height){

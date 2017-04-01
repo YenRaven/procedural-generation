@@ -323,8 +323,7 @@
 	                                    }
 	                                },
 	                                key: '' + position.x + position.y + position.z,
-	                                position: position.x + ' ' + position.y + ' ' + position.z,
-	                                'n-box-collider': 'size: 1 ' + height + ' 1; type: environment;' });
+	                                position: position.x + ' ' + position.y + ' ' + position.z });
 	                        });
 	                    });
 	                })
@@ -379,6 +378,9 @@
 	        key: 'componentDidUpdate',
 	        value: function componentDidUpdate() {
 	            this.meshBoxes();
+	            this.box.forEach(function (box) {
+	                box.el.setAttribute("n-box-collider", 'size: 1 ' + box.height + ' 1; type: environment;');
+	            });
 	        }
 	    }, {
 	        key: 'generateTexture',
