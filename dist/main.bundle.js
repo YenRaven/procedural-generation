@@ -140,6 +140,7 @@
 	        _this.terrainTextures = [];
 	        _this.terrain = [];
 	        _this.merged = [];
+	        _this.mesh = [];
 	
 	        _this.boxId = 0;
 	
@@ -316,7 +317,8 @@
 	                                    if (box) {
 	                                        _this2.box.push({
 	                                            el: box,
-	                                            height: height
+	                                            height: height,
+	                                            isNew: true
 	                                        });
 	                                    }
 	                                },
@@ -504,77 +506,78 @@
 	
 	            var topBottomLoad = [],
 	                capLoad = [],
-	                dirtLoad = [],
-	                mesh = [];
+	                dirtLoad = [];
 	            this.terrainTextures.forEach(function (t, height) {
-	                if (t) {
-	                    var ctx = _this4["terrain" + height].getContext("2d");
+	                if (!_this4.mesh[height]) {
+	                    if (t) {
+	                        var ctx = _this4["terrain" + height].getContext("2d");
 	
-	                    //top bottom
-	                    if (_this4.refs.topbottom.width > 0) {
-	                        ctx.drawImage(_this4.refs.topbottom, 0, 0, 32, 16);
-	                    } else {
-	                        topBottomLoad.push(function (ctx) {
-	                            return function () {
-	                                ctx.drawImage(_this4.refs.topbottom, 0, 0, 32, 16);
-	                            };
-	                        }(ctx));
-	                    }
-	
-	                    //caps
-	                    if (_this4.refs.cap.width > 0) {
-	                        ctx.drawImage(_this4.refs.cap, 0, 16, 16, 16);
-	                        ctx.drawImage(_this4.refs.cap, 16, 16, 16, 16);
-	                        ctx.drawImage(_this4.refs.cap, 0, 16 + 16 * height, 16, 16);
-	                        ctx.drawImage(_this4.refs.cap, 16, 16 + 16 * height, 16, 16);
-	                        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-	                        //ctx.fillRect(0, 16, 32, 16);
-	                        ctx.fillRect(0, 16 + 16 * height, 32, 16);
-	                    } else {
-	                        capLoad.push(function (ctx) {
-	                            return function () {
-	                                ctx.drawImage(_this4.refs.cap, 0, 16, 16, 16);
-	                                ctx.drawImage(_this4.refs.cap, 16, 16, 16, 16);
-	                                ctx.drawImage(_this4.refs.cap, 0, 16 + 16 * height, 16, 16);
-	                                ctx.drawImage(_this4.refs.cap, 16, 16 + 16 * height, 16, 16);
-	                                ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-	                                //ctx.fillRect(0, 16, 32, 16);
-	                                ctx.fillRect(0, 16 + 16 * height, 32, 16);
-	                            };
-	                        }(ctx));
-	                    }
-	
-	                    //sides
-	                    if (_this4.refs.dirt.width > 0) {
-	                        for (var i = 1; i < height; i++) {
-	                            ctx.drawImage(_this4.refs.dirt, 0, 16 + 16 * i, 16, 16);
-	                            ctx.drawImage(_this4.refs.dirt, 16, 16 + 16 * i, 16, 16);
-	                            ctx.drawImage(_this4.refs.dirt, 0, 16 + 16 * height + 16 * i, 16, 16);
-	                            ctx.drawImage(_this4.refs.dirt, 16, 16 + 16 * height + 16 * i, 16, 16);
+	                        //top bottom
+	                        if (_this4.refs.topbottom.width > 0) {
+	                            ctx.drawImage(_this4.refs.topbottom, 0, 0, 32, 16);
+	                        } else {
+	                            topBottomLoad.push(function (ctx) {
+	                                return function () {
+	                                    ctx.drawImage(_this4.refs.topbottom, 0, 0, 32, 16);
+	                                };
+	                            }(ctx));
 	                        }
-	                        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-	                        //ctx.fillRect(0, 32, 32, 16 * (height-1));
-	                        ctx.fillRect(0, 32 + 16 * height, 32, 16 * (height - 1));
-	                    } else {
-	                        dirtLoad.push(function (ctx) {
-	                            return function () {
-	                                for (var i = 1; i < height; i++) {
-	                                    ctx.drawImage(_this4.refs.dirt, 0, 16 + 16 * i, 16, 16);
-	                                    ctx.drawImage(_this4.refs.dirt, 16, 16 + 16 * i, 16, 16);
-	                                    ctx.drawImage(_this4.refs.dirt, 0, 16 + 16 * height + 16 * i, 16, 16);
-	                                    ctx.drawImage(_this4.refs.dirt, 16, 16 + 16 * height + 16 * i, 16, 16);
-	                                }
-	                                ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-	                                //ctx.fillRect(0, 32, 32, 16 * (height-1));
-	                                ctx.fillRect(0, 32 + 16 * height, 32, 16 * (height - 1));
-	                            };
-	                        }(ctx));
-	                    }
-	                }
 	
-	                mesh[height] = new THREE.Mesh(new THREE.BufferGeometry().fromGeometry(t.geometry), new THREE.MeshBasicMaterial({
-	                    map: new THREE.CanvasTexture(_this4["terrain" + height])
-	                }));
+	                        //caps
+	                        if (_this4.refs.cap.width > 0) {
+	                            ctx.drawImage(_this4.refs.cap, 0, 16, 16, 16);
+	                            ctx.drawImage(_this4.refs.cap, 16, 16, 16, 16);
+	                            ctx.drawImage(_this4.refs.cap, 0, 16 + 16 * height, 16, 16);
+	                            ctx.drawImage(_this4.refs.cap, 16, 16 + 16 * height, 16, 16);
+	                            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+	                            //ctx.fillRect(0, 16, 32, 16);
+	                            ctx.fillRect(0, 16 + 16 * height, 32, 16);
+	                        } else {
+	                            capLoad.push(function (ctx) {
+	                                return function () {
+	                                    ctx.drawImage(_this4.refs.cap, 0, 16, 16, 16);
+	                                    ctx.drawImage(_this4.refs.cap, 16, 16, 16, 16);
+	                                    ctx.drawImage(_this4.refs.cap, 0, 16 + 16 * height, 16, 16);
+	                                    ctx.drawImage(_this4.refs.cap, 16, 16 + 16 * height, 16, 16);
+	                                    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+	                                    //ctx.fillRect(0, 16, 32, 16);
+	                                    ctx.fillRect(0, 16 + 16 * height, 32, 16);
+	                                };
+	                            }(ctx));
+	                        }
+	
+	                        //sides
+	                        if (_this4.refs.dirt.width > 0) {
+	                            for (var i = 1; i < height; i++) {
+	                                ctx.drawImage(_this4.refs.dirt, 0, 16 + 16 * i, 16, 16);
+	                                ctx.drawImage(_this4.refs.dirt, 16, 16 + 16 * i, 16, 16);
+	                                ctx.drawImage(_this4.refs.dirt, 0, 16 + 16 * height + 16 * i, 16, 16);
+	                                ctx.drawImage(_this4.refs.dirt, 16, 16 + 16 * height + 16 * i, 16, 16);
+	                            }
+	                            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+	                            //ctx.fillRect(0, 32, 32, 16 * (height-1));
+	                            ctx.fillRect(0, 32 + 16 * height, 32, 16 * (height - 1));
+	                        } else {
+	                            dirtLoad.push(function (ctx) {
+	                                return function () {
+	                                    for (var i = 1; i < height; i++) {
+	                                        ctx.drawImage(_this4.refs.dirt, 0, 16 + 16 * i, 16, 16);
+	                                        ctx.drawImage(_this4.refs.dirt, 16, 16 + 16 * i, 16, 16);
+	                                        ctx.drawImage(_this4.refs.dirt, 0, 16 + 16 * height + 16 * i, 16, 16);
+	                                        ctx.drawImage(_this4.refs.dirt, 16, 16 + 16 * height + 16 * i, 16, 16);
+	                                    }
+	                                    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+	                                    //ctx.fillRect(0, 32, 32, 16 * (height-1));
+	                                    ctx.fillRect(0, 32 + 16 * height, 32, 16 * (height - 1));
+	                                };
+	                            }(ctx));
+	                        }
+	                    }
+	
+	                    _this4.mesh[height] = new THREE.Mesh(new THREE.BufferGeometry().fromGeometry(t.geometry), new THREE.MeshBasicMaterial({
+	                        map: new THREE.CanvasTexture(_this4["terrain" + height])
+	                    }));
+	                }
 	            });
 	
 	            this.refs.topbottom.onload = function () {
@@ -594,8 +597,9 @@
 	            };
 	
 	            this.box.forEach(function (box) {
-	                if (box.el) {
-	                    box.el.setObject3D("mesh", mesh[box.height].clone());
+	                if (box.el && box.isNew) {
+	                    box.isNew = false;
+	                    box.el.setObject3D("mesh", _this4.mesh[box.height].clone());
 	                }
 	            });
 	        }

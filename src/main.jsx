@@ -19,6 +19,7 @@ class Main extends React.Component {
         this.terrainTextures = [];
         this.terrain = [];
         this.merged = [];
+        this.mesh = [];
 
         this.boxId = 0;
 
@@ -205,7 +206,8 @@ class Main extends React.Component {
                                         if(box){
                                             this.box.push({
                                                 el:box,
-                                                height: height
+                                                height: height,
+                                                isNew: true
                                             });
                                         }
                                     }}
@@ -469,32 +471,23 @@ class Main extends React.Component {
     meshBoxes(){
         let topBottomLoad = [],
             capLoad = [],
-            dirtLoad = [],
-            mesh = [];
+            dirtLoad = []
         this.terrainTextures.forEach((t, height) => {
-            if(t){
-                let ctx = this["terrain"+height].getContext("2d");
+            if(!this.mesh[height]){
+                if(t){
+                    let ctx = this["terrain"+height].getContext("2d");
 
-                //top bottom
-                if(this.refs.topbottom.width>0){
-                    ctx.drawImage(this.refs.topbottom, 0, 0, 32, 16);
-                }else{
-                    topBottomLoad.push(((ctx) => () => {
+                    //top bottom
+                    if(this.refs.topbottom.width>0){
                         ctx.drawImage(this.refs.topbottom, 0, 0, 32, 16);
-                    })(ctx));
-                }
+                    }else{
+                        topBottomLoad.push(((ctx) => () => {
+                            ctx.drawImage(this.refs.topbottom, 0, 0, 32, 16);
+                        })(ctx));
+                    }
 
-                //caps
-                if(this.refs.cap.width>0){
-                    ctx.drawImage(this.refs.cap, 0, 16, 16, 16);
-                    ctx.drawImage(this.refs.cap, 16, 16, 16, 16);
-                    ctx.drawImage(this.refs.cap, 0, 16 + 16 * height, 16, 16);
-                    ctx.drawImage(this.refs.cap, 16, 16 + 16 * height, 16, 16);
-                    ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
-                    //ctx.fillRect(0, 16, 32, 16);
-                    ctx.fillRect(0, 16 + 16 * height, 32, 16);
-                }else{
-                    capLoad.push(((ctx) => () => {
+                    //caps
+                    if(this.refs.cap.width>0){
                         ctx.drawImage(this.refs.cap, 0, 16, 16, 16);
                         ctx.drawImage(this.refs.cap, 16, 16, 16, 16);
                         ctx.drawImage(this.refs.cap, 0, 16 + 16 * height, 16, 16);
@@ -502,22 +495,20 @@ class Main extends React.Component {
                         ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
                         //ctx.fillRect(0, 16, 32, 16);
                         ctx.fillRect(0, 16 + 16 * height, 32, 16);
-                    })(ctx))
-                }
-
-                //sides
-                if(this.refs.dirt.width>0){
-                    for(var i = 1; i < height; i++){
-                        ctx.drawImage(this.refs.dirt, 0, 16 + 16 * i, 16, 16);
-                        ctx.drawImage(this.refs.dirt, 16, 16 + 16 * i, 16, 16);
-                        ctx.drawImage(this.refs.dirt, 0, 16 + 16 * height + 16 * i, 16, 16);
-                        ctx.drawImage(this.refs.dirt, 16, 16 + 16 * height + 16 * i, 16, 16);
+                    }else{
+                        capLoad.push(((ctx) => () => {
+                            ctx.drawImage(this.refs.cap, 0, 16, 16, 16);
+                            ctx.drawImage(this.refs.cap, 16, 16, 16, 16);
+                            ctx.drawImage(this.refs.cap, 0, 16 + 16 * height, 16, 16);
+                            ctx.drawImage(this.refs.cap, 16, 16 + 16 * height, 16, 16);
+                            ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
+                            //ctx.fillRect(0, 16, 32, 16);
+                            ctx.fillRect(0, 16 + 16 * height, 32, 16);
+                        })(ctx))
                     }
-                    ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
-                    //ctx.fillRect(0, 32, 32, 16 * (height-1));
-                    ctx.fillRect(0, 32 + 16 * height, 32, 16 * (height-1));
-                }else{
-                    dirtLoad.push(((ctx) => () => {
+
+                    //sides
+                    if(this.refs.dirt.width>0){
                         for(var i = 1; i < height; i++){
                             ctx.drawImage(this.refs.dirt, 0, 16 + 16 * i, 16, 16);
                             ctx.drawImage(this.refs.dirt, 16, 16 + 16 * i, 16, 16);
@@ -527,17 +518,29 @@ class Main extends React.Component {
                         ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
                         //ctx.fillRect(0, 32, 32, 16 * (height-1));
                         ctx.fillRect(0, 32 + 16 * height, 32, 16 * (height-1));
-                    })(ctx));
+                    }else{
+                        dirtLoad.push(((ctx) => () => {
+                            for(var i = 1; i < height; i++){
+                                ctx.drawImage(this.refs.dirt, 0, 16 + 16 * i, 16, 16);
+                                ctx.drawImage(this.refs.dirt, 16, 16 + 16 * i, 16, 16);
+                                ctx.drawImage(this.refs.dirt, 0, 16 + 16 * height + 16 * i, 16, 16);
+                                ctx.drawImage(this.refs.dirt, 16, 16 + 16 * height + 16 * i, 16, 16);
+                            }
+                            ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
+                            //ctx.fillRect(0, 32, 32, 16 * (height-1));
+                            ctx.fillRect(0, 32 + 16 * height, 32, 16 * (height-1));
+                        })(ctx));
+                    }
                 }
+
+
+                this.mesh[height] = new THREE.Mesh(
+                    (new THREE.BufferGeometry()).fromGeometry(t.geometry),
+                    new THREE.MeshBasicMaterial({
+                        map: new THREE.CanvasTexture(this["terrain"+height])
+                    })
+                )
             }
-
-
-            mesh[height] = new THREE.Mesh(
-                (new THREE.BufferGeometry()).fromGeometry(t.geometry),
-                new THREE.MeshBasicMaterial({
-                    map: new THREE.CanvasTexture(this["terrain"+height])
-                })
-            )
         });
 
         this.refs.topbottom.onload = () => {
@@ -557,8 +560,9 @@ class Main extends React.Component {
         };
 
         this.box.forEach((box) => {
-            if(box.el){
-                box.el.setObject3D("mesh", mesh[box.height].clone());
+            if(box.el && box.isNew){
+                box.isNew = false;
+                box.el.setObject3D("mesh", this.mesh[box.height].clone());
             }
         });
     }
