@@ -25,9 +25,9 @@ class Main extends React.Component {
         this.state = {
             user:false,
             sync:{
-                width: 8,
-                height: 8,
-                depth: 8,
+                width: 16,
+                height: 16,
+                depth: 16,
                 seed: null
             }
         }
@@ -83,7 +83,7 @@ class Main extends React.Component {
                 {
                     this.boxSizes.map((isSize, id)=>{
                         if(isSize){
-                            return <a-mixin id="merge" geometry={`mergeTo:#blockMerge${id}; skipCache: true; buffer: false`}></a-mixin>
+                            return <a-mixin key={id} id="merge" geometry={`mergeTo:#blockMerge${id}; skipCache: true; buffer: false`}></a-mixin>
                         }else{
                             return null;
                         }
@@ -197,20 +197,21 @@ class Main extends React.Component {
                 this.terrain.map((x, xid) => {
                     return x.map((y, yid) => {
                         return y.map((block, zid) => {
+                            let height = block.end - block.start;
+                            let position = new THREE.Vector3(xid, height/2 + (block.start - 1), yid);
                             return <a-entity
-                                    mixin={`blockMerge${block.end - block.start}`}
+                                    mixin={`blockMerge${height}`}
                                     ref = {(box) => {
                                         if(box){
                                             this.box.push({
                                                 el:box,
-                                                height: block.end - block.start
+                                                height: height
                                             });
                                         }
                                     }}
-                                    key={"box"+(this.boxId++)}
-                                    id={this.boxId}
-                                    position={`${xid} ${(block.end - block.start)/2 + (block.start - 1)} ${yid}`}
-                                    n-box-collider={`size: 1 ${block.end-block.start} 1; type: environment;`} />;
+                                    key={`${position.x}${position.y}${position.z}`}
+                                    position={`${position.x} ${position.y} ${position.z}`}
+                                    n-box-collider={`size: 1 ${height} 1; type: environment;`} />;
                         })
                     })
                 })

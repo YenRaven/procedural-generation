@@ -146,9 +146,9 @@
 	        _this.state = {
 	            user: false,
 	            sync: {
-	                width: 8,
-	                height: 8,
-	                depth: 8,
+	                width: 16,
+	                height: 16,
+	                depth: 16,
 	                seed: null
 	            }
 	        };
@@ -214,7 +214,7 @@
 	                    null,
 	                    this.boxSizes.map(function (isSize, id) {
 	                        if (isSize) {
-	                            return _react2.default.createElement('a-mixin', { id: 'merge', geometry: 'mergeTo:#blockMerge' + id + '; skipCache: true; buffer: false' });
+	                            return _react2.default.createElement('a-mixin', { key: id, id: 'merge', geometry: 'mergeTo:#blockMerge' + id + '; skipCache: true; buffer: false' });
 	                        } else {
 	                            return null;
 	                        }
@@ -308,20 +308,21 @@
 	                this.terrain.map(function (x, xid) {
 	                    return x.map(function (y, yid) {
 	                        return y.map(function (block, zid) {
+	                            var height = block.end - block.start;
+	                            var position = new THREE.Vector3(xid, height / 2 + (block.start - 1), yid);
 	                            return _react2.default.createElement('a-entity', {
-	                                mixin: 'blockMerge' + (block.end - block.start),
+	                                mixin: 'blockMerge' + height,
 	                                ref: function ref(box) {
 	                                    if (box) {
 	                                        _this2.box.push({
 	                                            el: box,
-	                                            height: block.end - block.start
+	                                            height: height
 	                                        });
 	                                    }
 	                                },
-	                                key: "box" + _this2.boxId++,
-	                                id: _this2.boxId,
-	                                position: xid + ' ' + ((block.end - block.start) / 2 + (block.start - 1)) + ' ' + yid,
-	                                'n-box-collider': 'size: 1 ' + (block.end - block.start) + ' 1; type: environment;' });
+	                                key: '' + position.x + position.y + position.z,
+	                                position: position.x + ' ' + position.y + ' ' + position.z,
+	                                'n-box-collider': 'size: 1 ' + height + ' 1; type: environment;' });
 	                        });
 	                    });
 	                })
