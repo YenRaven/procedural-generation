@@ -95,6 +95,7 @@ class Main extends React.Component {
                 <img src={require("base64-image!../assets/dirt.jpg")} id="dirt" ref="dirt" />
                 <img src={require("base64-image!../assets/topbottom.jpg")} id="topbottom" ref="topbottom" />
                 <img src={require("base64-image!../assets/cap.jpg")} id="cap" ref="cap" />
+                <img src={require("base64-image!../assets/grass.jpg")} id="grass" ref="grass" />
                 {this.terrainTextures.map((txt, id) => {
                     return (
                         txt?
@@ -106,6 +107,7 @@ class Main extends React.Component {
             </a-assets>
             {(this.state.user && (this.state.user.isModerator || this.state.sync.approvedSudoMods.includes(this.state.user.displayName))) ? [
                 <TextControlBtn
+                    key="newBtn"
                     position={new THREE.Vector3(-1, 0.4, -1.5)}
                     color="#888888"
                     value="New"
@@ -115,6 +117,7 @@ class Main extends React.Component {
                 />,
 
                 <TextControlBtn
+                    key="widthBtn"
                     position={new THREE.Vector3(-1, 0.29, -1.5)}
                     color="#884444"
                     value={`Width:${this.state.sync.width}`}
@@ -122,6 +125,7 @@ class Main extends React.Component {
                     height="0.1"
                 />,
                 <TextControlBtn
+                    key="widthBtn+"
                     position={new THREE.Vector3(-0.75, 0.29, -1.5)}
                     color="#884444"
                     value="+"
@@ -130,6 +134,7 @@ class Main extends React.Component {
                     onClick={this.nextWidth(true)}
                 />,
                 <TextControlBtn
+                    key="widthBtn-"
                     position={new THREE.Vector3(-1.25, 0.29, -1.5)}
                     color="#884444"
                     value="-"
@@ -139,6 +144,7 @@ class Main extends React.Component {
                 />,
 
                 <TextControlBtn
+                    key="heightBtn"
                     position={new THREE.Vector3(-1, 0.18, -1.5)}
                     color="#448844"
                     value={`Height:${this.state.sync.height}`}
@@ -146,6 +152,7 @@ class Main extends React.Component {
                     height="0.1"
                 />,
                 <TextControlBtn
+                    key="heightBtn+"
                     position={new THREE.Vector3(-0.75, 0.18, -1.5)}
                     color="#448844"
                     value="+"
@@ -154,6 +161,7 @@ class Main extends React.Component {
                     onClick={this.nextHeight(true)}
                 />,
                 <TextControlBtn
+                    key="heightBtn-"
                     position={new THREE.Vector3(-1.25, 0.18, -1.5)}
                     color="#448844"
                     value="-"
@@ -163,6 +171,7 @@ class Main extends React.Component {
                 />,
 
                 <TextControlBtn
+                    key="depthBtn"
                     position={new THREE.Vector3(-1, 0.07, -1.5)}
                     color="#444488"
                     value={`Depth:${this.state.sync.depth}`}
@@ -170,6 +179,7 @@ class Main extends React.Component {
                     height="0.1"
                 />,
                 <TextControlBtn
+                    key="depthBtn+"
                     position={new THREE.Vector3(-0.75, 0.07, -1.5)}
                     color="#444488"
                     value="+"
@@ -178,6 +188,7 @@ class Main extends React.Component {
                     onClick={this.nextDepth(true)}
                 />,
                 <TextControlBtn
+                    key="depthBtn-"
                     position={new THREE.Vector3(-1.25, 0.07, -1.5)}
                     color="#444488"
                     value="-"
@@ -187,6 +198,13 @@ class Main extends React.Component {
                 />
             ] : null
             }
+            <a-plane
+                rotation="-90 0 0"
+                position={`${this.state.sync.width/2} 0 ${this.state.sync.height/2}`}
+                width={this.state.sync.width + 16}
+                height={this.state.sync.height + 16}
+                material={`src:#grass; repeat: ${this.state.sync.width + 16} ${this.state.sync.height + 16}`}
+            />
             {
                 this.boxSizes.map((isSize, id)=>{
                     if(isSize){
