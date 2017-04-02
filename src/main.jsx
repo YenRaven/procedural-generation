@@ -409,7 +409,7 @@ class Main extends React.Component {
                     var dy = Math.abs(height/2 - y);
                     var dist = 1 - ((dx / (width/2)) * (dy / (height/2)));
                     var sdist = dist * 0.5 + 0.5;
-                    var smtn = (sheight + sdist) / 2;
+                    var smtn = sheight>sdist?sheight:sdist;
                     t = (t/2) * smtn > 0.5;
 
 
