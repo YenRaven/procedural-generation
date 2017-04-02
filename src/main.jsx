@@ -41,6 +41,7 @@ class Main extends React.Component {
 
         this.boxSizes = new Array(this.state.height);
 
+        this.renderNum = 0;
         //this.generateWorld();
     }
 
@@ -71,7 +72,7 @@ class Main extends React.Component {
     }
 
     render() {
-
+        this.renderNum++;
         this.box = new Array();
 
         return (
@@ -207,7 +208,7 @@ class Main extends React.Component {
                                             this.box.push({
                                                 el:box,
                                                 height: height,
-                                                isNew: true
+                                                renderNum: this.renderNum
                                             });
                                         }
                                     }}
@@ -317,9 +318,6 @@ class Main extends React.Component {
 
     componentDidUpdate(){
         this.meshBoxes();
-        this.box.forEach((box) => {
-            box.el.setAttribute("n-box-collider", `size: 1 ${box.height} 1; type: environment;`);
-        });
     }
 
     generateTexture(height){
@@ -562,9 +560,9 @@ class Main extends React.Component {
         };
 
         this.box.forEach((box) => {
-            if(box.el && box.isNew){
-                box.isNew = false;
+            if(box.el && !box.el.getAttribute("n-box-collider")){
                 box.el.setObject3D("mesh", this.mesh[box.height].clone());
+                box.el.setAttribute("n-box-collider", `size: 1 ${box.height} 1; type: environment;`);
             }
         });
     }

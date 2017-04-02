@@ -162,6 +162,7 @@
 	
 	        _this.boxSizes = new Array(_this.state.height);
 	
+	        _this.renderNum = 0;
 	        //this.generateWorld();
 	        return _this;
 	    }
@@ -199,6 +200,7 @@
 	        value: function render() {
 	            var _this2 = this;
 	
+	            this.renderNum++;
 	            this.box = new Array();
 	
 	            return _react2.default.createElement(
@@ -318,7 +320,7 @@
 	                                        _this2.box.push({
 	                                            el: box,
 	                                            height: height,
-	                                            isNew: true
+	                                            renderNum: _this2.renderNum
 	                                        });
 	                                    }
 	                                },
@@ -378,9 +380,6 @@
 	        key: 'componentDidUpdate',
 	        value: function componentDidUpdate() {
 	            this.meshBoxes();
-	            this.box.forEach(function (box) {
-	                box.el.setAttribute("n-box-collider", 'size: 1 ' + box.height + ' 1; type: environment;');
-	            });
 	        }
 	    }, {
 	        key: 'generateTexture',
@@ -599,9 +598,9 @@
 	            };
 	
 	            this.box.forEach(function (box) {
-	                if (box.el && box.isNew) {
-	                    box.isNew = false;
+	                if (box.el && !box.el.getAttribute("n-box-collider")) {
 	                    box.el.setObject3D("mesh", _this4.mesh[box.height].clone());
+	                    box.el.setAttribute("n-box-collider", 'size: 1 ' + box.height + ' 1; type: environment;');
 	                }
 	            });
 	        }
