@@ -441,8 +441,7 @@
 	                        var sheight = (1 - z / depth) * 0.5 + 0.5;
 	                        var dx = Math.abs(width / 2 - x);
 	                        var dy = Math.abs(height / 2 - y);
-	                        var dist = 1 - dx / (width / 2) * (dy / (height / 2));
-	                        var sdist = dist * 0.5 + 0.5;
+	                        var sdist = 1 - dx / (width / 2) * (dy / (height / 2));
 	                        var smtn = sheight > sdist ? sheight : sdist;
 	                        t = t / 2 * smtn > 0.5;
 	
