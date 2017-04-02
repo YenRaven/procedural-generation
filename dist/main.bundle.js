@@ -535,69 +535,30 @@
 	                        var ctx = _this4["terrain" + height].getContext("2d");
 	
 	                        //top bottom
-	                        if (_this4.refs.topbottom.width > 0) {
-	                            ctx.drawImage(_this4.refs.topbottom, 0, 0, 32, 16);
-	                            ctx.fillStyle = 'rgba(' + ~~(Math.random() * 255) + ', ' + ~~(Math.random() * 255) + ', ' + ~~(Math.random() * 255) + ', 0.1)';
-	                            ctx.fillRect(0, 0, 16, 16);
-	                        } else {
-	                            topBottomLoad.push(function (ctx) {
-	                                return function () {
-	                                    ctx.drawImage(_this4.refs.topbottom, 0, 0, 32, 16);
-	                                    ctx.fillStyle = 'rgba(' + ~~(Math.random() * 255) + ', ' + ~~(Math.random() * 255) + ', ' + ~~(Math.random() * 255) + ', 0.3)';
-	                                    ctx.fillRect(0, 0, 16, 16);
-	                                };
-	                            }(ctx));
-	                        }
+	                        ctx.drawImage(_this4.refs.topbottom, 0, 0, 32, 16);
+	                        ctx.fillStyle = 'rgba(' + ~~(Math.random() * 255) + ', ' + ~~(Math.random() * 255) + ', ' + ~~(Math.random() * 255) + ', 0.1)';
+	                        ctx.fillRect(0, 0, 16, 16);
 	
 	                        //caps
-	                        if (_this4.refs.cap.width > 0) {
-	                            ctx.drawImage(_this4.refs.cap, 0, 16, 16, 16);
-	                            ctx.drawImage(_this4.refs.cap, 16, 16, 16, 16);
-	                            ctx.drawImage(_this4.refs.cap, 0, 16 + 16 * height, 16, 16);
-	                            ctx.drawImage(_this4.refs.cap, 16, 16 + 16 * height, 16, 16);
-	                            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-	                            //ctx.fillRect(0, 16, 32, 16);
-	                            ctx.fillRect(0, 16 + 16 * height, 32, 16);
-	                        } else {
-	                            capLoad.push(function (ctx) {
-	                                return function () {
-	                                    ctx.drawImage(_this4.refs.cap, 0, 16, 16, 16);
-	                                    ctx.drawImage(_this4.refs.cap, 16, 16, 16, 16);
-	                                    ctx.drawImage(_this4.refs.cap, 0, 16 + 16 * height, 16, 16);
-	                                    ctx.drawImage(_this4.refs.cap, 16, 16 + 16 * height, 16, 16);
-	                                    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-	                                    //ctx.fillRect(0, 16, 32, 16);
-	                                    ctx.fillRect(0, 16 + 16 * height, 32, 16);
-	                                };
-	                            }(ctx));
-	                        }
+	                        ctx.drawImage(_this4.refs.cap, 0, 16, 16, 16);
+	                        ctx.drawImage(_this4.refs.cap, 16, 16, 16, 16);
+	                        ctx.drawImage(_this4.refs.cap, 0, 16 + 16 * height, 16, 16);
+	                        ctx.drawImage(_this4.refs.cap, 16, 16 + 16 * height, 16, 16);
+	                        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+	                        ctx.fillRect(0, 16 + 16 * height, 32, 16);
 	
 	                        //sides
-	                        if (_this4.refs.dirt.width > 0) {
-	                            for (var i = 1; i < height; i++) {
-	                                ctx.drawImage(_this4.refs.dirt, 0, 16 + 16 * i, 16, 16);
-	                                ctx.drawImage(_this4.refs.dirt, 16, 16 + 16 * i, 16, 16);
-	                                ctx.drawImage(_this4.refs.dirt, 0, 16 + 16 * height + 16 * i, 16, 16);
-	                                ctx.drawImage(_this4.refs.dirt, 16, 16 + 16 * height + 16 * i, 16, 16);
-	                            }
-	                            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-	                            //ctx.fillRect(0, 32, 32, 16 * (height-1));
-	                            ctx.fillRect(0, 32 + 16 * height, 32, 16 * (height - 1));
-	                        } else {
-	                            dirtLoad.push(function (ctx) {
-	                                return function () {
-	                                    for (var i = 1; i < height; i++) {
-	                                        ctx.drawImage(_this4.refs.dirt, 0, 16 + 16 * i, 16, 16);
-	                                        ctx.drawImage(_this4.refs.dirt, 16, 16 + 16 * i, 16, 16);
-	                                        ctx.drawImage(_this4.refs.dirt, 0, 16 + 16 * height + 16 * i, 16, 16);
-	                                        ctx.drawImage(_this4.refs.dirt, 16, 16 + 16 * height + 16 * i, 16, 16);
-	                                    }
-	                                    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-	                                    //ctx.fillRect(0, 32, 32, 16 * (height-1));
-	                                    ctx.fillRect(0, 32 + 16 * height, 32, 16 * (height - 1));
-	                                };
-	                            }(ctx));
+	                        for (var i = 1; i < height; i++) {
+	                            ctx.drawImage(_this4.refs.dirt, 0, 16 + 16 * i, 16, 16);
+	                            ctx.drawImage(_this4.refs.dirt, 16, 16 + 16 * i, 16, 16);
+	                            ctx.drawImage(_this4.refs.dirt, 0, 16 + 16 * height + 16 * i, 16, 16);
+	                            ctx.drawImage(_this4.refs.dirt, 16, 16 + 16 * height + 16 * i, 16, 16);
 	                        }
+	                        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+	                        ctx.fillRect(0, 32 + 16 * height, 32, 16 * (height - 1));
+	
+	                        ctx.fillStyle = 'rgba(' + ~~(Math.random() * 255) + ', ' + ~~(Math.random() * 255) + ', ' + ~~(Math.random() * 255) + ', 0.05)';
+	                        ctx.fillRect(0, 16, 32, 16 * height);
 	                    }
 	
 	                    _this4.mesh[height] = new THREE.Mesh(new THREE.BufferGeometry().fromGeometry(t.geometry), new THREE.MeshBasicMaterial({

@@ -499,63 +499,31 @@ class Main extends React.Component {
                     let ctx = this["terrain"+height].getContext("2d");
 
                     //top bottom
-                    if(this.refs.topbottom.width>0){
-                        ctx.drawImage(this.refs.topbottom, 0, 0, 32, 16);
-                        ctx.fillStyle = `rgba(${~~(Math.random()*255)}, ${~~(Math.random()*255)}, ${~~(Math.random()*255)}, 0.1)`
-                        ctx.fillRect(0, 0, 16, 16);
-                    }else{
-                        topBottomLoad.push(((ctx) => () => {
-                            ctx.drawImage(this.refs.topbottom, 0, 0, 32, 16);
-                            ctx.fillStyle = `rgba(${~~(Math.random()*255)}, ${~~(Math.random()*255)}, ${~~(Math.random()*255)}, 0.3)`
-                            ctx.fillRect(0, 0, 16, 16);
-                        })(ctx));
-                    }
+                    ctx.drawImage(this.refs.topbottom, 0, 0, 32, 16);
+                    ctx.fillStyle = `rgba(${~~(Math.random()*255)}, ${~~(Math.random()*255)}, ${~~(Math.random()*255)}, 0.1)`
+                    ctx.fillRect(0, 0, 16, 16);
 
                     //caps
-                    if(this.refs.cap.width>0){
-                        ctx.drawImage(this.refs.cap, 0, 16, 16, 16);
-                        ctx.drawImage(this.refs.cap, 16, 16, 16, 16);
-                        ctx.drawImage(this.refs.cap, 0, 16 + 16 * height, 16, 16);
-                        ctx.drawImage(this.refs.cap, 16, 16 + 16 * height, 16, 16);
-                        ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
-                        //ctx.fillRect(0, 16, 32, 16);
-                        ctx.fillRect(0, 16 + 16 * height, 32, 16);
-                    }else{
-                        capLoad.push(((ctx) => () => {
-                            ctx.drawImage(this.refs.cap, 0, 16, 16, 16);
-                            ctx.drawImage(this.refs.cap, 16, 16, 16, 16);
-                            ctx.drawImage(this.refs.cap, 0, 16 + 16 * height, 16, 16);
-                            ctx.drawImage(this.refs.cap, 16, 16 + 16 * height, 16, 16);
-                            ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
-                            //ctx.fillRect(0, 16, 32, 16);
-                            ctx.fillRect(0, 16 + 16 * height, 32, 16);
-                        })(ctx))
-                    }
+                    ctx.drawImage(this.refs.cap, 0, 16, 16, 16);
+                    ctx.drawImage(this.refs.cap, 16, 16, 16, 16);
+                    ctx.drawImage(this.refs.cap, 0, 16 + 16 * height, 16, 16);
+                    ctx.drawImage(this.refs.cap, 16, 16 + 16 * height, 16, 16);
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
+                    ctx.fillRect(0, 16 + 16 * height, 32, 16);
 
                     //sides
-                    if(this.refs.dirt.width>0){
-                        for(var i = 1; i < height; i++){
-                            ctx.drawImage(this.refs.dirt, 0, 16 + 16 * i, 16, 16);
-                            ctx.drawImage(this.refs.dirt, 16, 16 + 16 * i, 16, 16);
-                            ctx.drawImage(this.refs.dirt, 0, 16 + 16 * height + 16 * i, 16, 16);
-                            ctx.drawImage(this.refs.dirt, 16, 16 + 16 * height + 16 * i, 16, 16);
-                        }
-                        ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
-                        //ctx.fillRect(0, 32, 32, 16 * (height-1));
-                        ctx.fillRect(0, 32 + 16 * height, 32, 16 * (height-1));
-                    }else{
-                        dirtLoad.push(((ctx) => () => {
-                            for(var i = 1; i < height; i++){
-                                ctx.drawImage(this.refs.dirt, 0, 16 + 16 * i, 16, 16);
-                                ctx.drawImage(this.refs.dirt, 16, 16 + 16 * i, 16, 16);
-                                ctx.drawImage(this.refs.dirt, 0, 16 + 16 * height + 16 * i, 16, 16);
-                                ctx.drawImage(this.refs.dirt, 16, 16 + 16 * height + 16 * i, 16, 16);
-                            }
-                            ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
-                            //ctx.fillRect(0, 32, 32, 16 * (height-1));
-                            ctx.fillRect(0, 32 + 16 * height, 32, 16 * (height-1));
-                        })(ctx));
+                    for(var i = 1; i < height; i++){
+                        ctx.drawImage(this.refs.dirt, 0, 16 + 16 * i, 16, 16);
+                        ctx.drawImage(this.refs.dirt, 16, 16 + 16 * i, 16, 16);
+                        ctx.drawImage(this.refs.dirt, 0, 16 + 16 * height + 16 * i, 16, 16);
+                        ctx.drawImage(this.refs.dirt, 16, 16 + 16 * height + 16 * i, 16, 16);
                     }
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
+                    ctx.fillRect(0, 32 + 16 * height, 32, 16 * (height-1));
+
+
+                    ctx.fillStyle = `rgba(${~~(Math.random()*255)}, ${~~(Math.random()*255)}, ${~~(Math.random()*255)}, 0.05)`;
+                    ctx.fillRect(0, 16, 32, 16 * (height));
                 }
 
 
