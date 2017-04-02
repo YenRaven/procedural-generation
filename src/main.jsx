@@ -403,7 +403,8 @@ class Main extends React.Component {
                 for(var z = 0; z < depth; z++){
                     var t = this.simplex.noise3D(x/16, y/16, z/16) * 0.5 + 0.5;
                     t += this.simplex.noise3D(x/32, y/32, z/32) * 0.5 + 0.5;
-                    t = (t/2) > 0.5;
+                    var mtn = (1 - z/depth) * 0.5 + 0.5;
+                    t = (t/2) * mtn > 0.5;
 
 
                     // let a1, a2, a3, a4, a5, a6;
