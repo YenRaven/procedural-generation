@@ -537,10 +537,14 @@
 	                        //top bottom
 	                        if (_this4.refs.topbottom.width > 0) {
 	                            ctx.drawImage(_this4.refs.topbottom, 0, 0, 32, 16);
+	                            ctx.fillStyle = 'rgba(' + ~~(Math.random() * 255) + ', ' + ~~(Math.random() * 255) + ', ' + ~~(Math.random() * 255) + ', 0.1)';
+	                            ctx.fillRect(0, 0, 16, 16);
 	                        } else {
 	                            topBottomLoad.push(function (ctx) {
 	                                return function () {
 	                                    ctx.drawImage(_this4.refs.topbottom, 0, 0, 32, 16);
+	                                    ctx.fillStyle = 'rgba(' + ~~(Math.random() * 255) + ', ' + ~~(Math.random() * 255) + ', ' + ~~(Math.random() * 255) + ', 0.3)';
+	                                    ctx.fillRect(0, 0, 16, 16);
 	                                };
 	                            }(ctx));
 	                        }

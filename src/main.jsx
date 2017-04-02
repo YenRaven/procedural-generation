@@ -501,9 +501,13 @@ class Main extends React.Component {
                     //top bottom
                     if(this.refs.topbottom.width>0){
                         ctx.drawImage(this.refs.topbottom, 0, 0, 32, 16);
+                        ctx.fillStyle = `rgba(${~~(Math.random()*255)}, ${~~(Math.random()*255)}, ${~~(Math.random()*255)}, 0.1)`
+                        ctx.fillRect(0, 0, 16, 16);
                     }else{
                         topBottomLoad.push(((ctx) => () => {
                             ctx.drawImage(this.refs.topbottom, 0, 0, 32, 16);
+                            ctx.fillStyle = `rgba(${~~(Math.random()*255)}, ${~~(Math.random()*255)}, ${~~(Math.random()*255)}, 0.3)`
+                            ctx.fillRect(0, 0, 16, 16);
                         })(ctx));
                     }
 
