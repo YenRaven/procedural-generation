@@ -95,7 +95,7 @@ class Main extends React.Component {
                 <img src={require("base64-image!../assets/dirt.jpg")} id="dirt" ref="dirt" />
                 <img src={require("base64-image!../assets/topbottom.jpg")} id="topbottom" ref="topbottom" />
                 <img src={require("base64-image!../assets/cap.jpg")} id="cap" ref="cap" />
-                <img src={require("base64-image!../assets/grass.jpg")} id="grass" ref="grass" />
+                <img src="../assets/grass.jpg" id="grass" ref="grass" />
                 {this.terrainTextures.map((txt, id) => {
                     return (
                         txt?
