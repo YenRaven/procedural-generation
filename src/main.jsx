@@ -404,12 +404,7 @@ class Main extends React.Component {
                 for(var z = 0; z < depth; z++){
                     var t = this.simplex.noise3D(x/16, y/16, z/16) * 0.5 + 0.5;
                     t += this.simplex.noise3D(x/32, y/32, z/32) * 0.5 + 0.5;
-                    var sheight = (1 - z/depth) * 0.5 + 0.5;
-                    var dx = Math.abs(width/2 - x);
-                    var dy = Math.abs(height/2 - y);
-                    var dist = 1 - ((dx / (width/2)) * (dy / (height/2)));
-                    var sdist = dist * 0.5 + 0.49;
-                    var smtn = sheight<sdist?sheight:sdist;
+                    var smtn = (1 - z/depth) * 0.5 + 0.5;
                     t = (t/2) * smtn > 0.5;
 
 
