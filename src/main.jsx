@@ -26,6 +26,7 @@ class Main extends React.Component {
         this.state = {
             user:false,
             sync:{
+                approvedSudoMods:["YenRaven", "Zerithax"],
                 width: 16,
                 height: 16,
                 depth: 16,
@@ -103,7 +104,7 @@ class Main extends React.Component {
                     })
                 }
             </a-assets>
-            {(this.state.user && this.state.user.isModerator) ? [
+            {(this.state.user && (this.state.user.isModerator || this.state.sync.approvedSudoMods.includes(this.state.user.displayName))) ? [
                 <TextControlBtn
                     position={new THREE.Vector3(-1, 0.4, -1.5)}
                     color="#888888"
@@ -404,7 +405,11 @@ class Main extends React.Component {
                     var t = this.simplex.noise3D(x/16, y/16, z/16) * 0.5 + 0.5;
                     t += this.simplex.noise3D(x/32, y/32, z/32) * 0.5 + 0.5;
                     var mtn = (1 - z/depth) * 0.5 + 0.5;
-                    t = (t/2) * mtn > 0.5;
+                    var dx = Math.abs(width/2 - x);
+                    var dy = Math.abs(height/2 - y);
+                    var dist = 1 - ((dx / (width/2)) * (dy / (height/2)));
+                    var sdist = dist * 0.5 + 0.5;
+                    t = (t/2) * mtn * sdist > 0.5;
 
 
                     // let a1, a2, a3, a4, a5, a6;
