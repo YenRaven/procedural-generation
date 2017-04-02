@@ -452,7 +452,7 @@ class Main extends React.Component {
                         }
                     }else{
                         //if(!t || (a1 && a2 && a3 && a4 && a5 && a6) || z === depth){
-                        if(!t || z === depth-1){
+                        if(!t || z === (depth - 1)){
                             terrain[x][y].push({start:blockStart, end:z});
                             var h = z - blockStart;
                             this.boxSizes[h] = true;
