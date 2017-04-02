@@ -316,7 +316,8 @@
 	                    position: this.state.sync.width / 2 + ' 0 ' + this.state.sync.height / 2,
 	                    width: this.state.sync.width + 16,
 	                    height: this.state.sync.height + 16,
-	                    material: 'src:#grass; repeat: ' + (this.state.sync.width + 16) + ' ' + (this.state.sync.height + 16)
+	                    src: '#grass',
+	                    repeat: this.state.sync.width + 16 + ' ' + (this.state.sync.height + 16)
 	                }),
 	                this.boxSizes.map(function (isSize, id) {
 	                    if (isSize) {
