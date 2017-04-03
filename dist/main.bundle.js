@@ -90,11 +90,24 @@
 	
 	        var _this = _possibleConstructorReturn(this, (Main.__proto__ || Object.getPrototypeOf(Main)).call(this, props));
 	
+	        _this.setClimbMarker = function (e) {
+	            var pos = e.target.getAttribute("position");
+	            _this.setState(function (state) {
+	                var rstate = _extends({}, state);
+	                rstate.sync.climb[state.user.displayName] = {
+	                    position: new THREE.Vector3(x, y, z)
+	                };
+	                return rstate;
+	            });
+	        };
+	
 	        _this.newWorld = function () {
 	            _this.setState(function (state) {
 	                return _extends({}, state, {
 	                    sync: _extends({}, state.sync, {
-	                        seed: Math.random() * 999999999
+	                        world: _extends({}, state.sync.world, {
+	                            seed: Math.random() * 999999999
+	                        })
 	                    })
 	                });
 	            });
@@ -105,7 +118,9 @@
 	                _this.setState(function (state) {
 	                    return _extends({}, state, {
 	                        sync: _extends({}, state.sync, {
-	                            width: inc ? state.sync.width * 2 : state.sync.width / 2
+	                            world: _extends({}, state.sync.world, {
+	                                width: inc ? state.sync.world.width * 2 : state.sync.world.width / 2
+	                            })
 	                        })
 	                    });
 	                });
@@ -117,7 +132,9 @@
 	                _this.setState(function (state) {
 	                    return _extends({}, state, {
 	                        sync: _extends({}, state.sync, {
-	                            height: inc ? state.sync.height * 2 : state.sync.height / 2
+	                            world: _extends({}, state.sync.world, {
+	                                height: inc ? state.sync.world.height * 2 : state.sync.world.height / 2
+	                            })
 	                        })
 	                    });
 	                });
@@ -129,7 +146,9 @@
 	                _this.setState(function (state) {
 	                    return _extends({}, state, {
 	                        sync: _extends({}, state.sync, {
-	                            depth: inc ? state.sync.depth * 2 : state.sync.depth / 2
+	                            world: _extends({}, state.sync.world, {
+	                                depth: inc ? state.sync.world.depth * 2 : state.sync.world.depth / 2
+	                            })
 	                        })
 	                    });
 	                });
@@ -146,12 +165,16 @@
 	
 	        _this.state = {
 	            user: false,
+	            skeleton: false,
+	            approvedSudoMods: ["YenRaven", "Zerithax"],
 	            sync: {
-	                approvedSudoMods: ["YenRaven", "Zerithax"],
-	                width: 16,
-	                height: 16,
-	                depth: 16,
-	                seed: null
+	                world: {
+	                    width: 16,
+	                    height: 16,
+	                    depth: 16,
+	                    seed: null
+	                },
+	                climb: {}
 	            }
 	        };
 	
@@ -159,11 +182,13 @@
 	            altspace.getUser().then(function (user) {
 	                _this.setState({ user: user });
 	            });
+	            altspace.getThreeJSTrackingSkeleton().then(function (skeleton) {
+	                _this.setState({ skeleton: skeleton });
+	            });
 	        }
 	
 	        _this.boxSizes = new Array(_this.state.height);
 	
-	        _this.renderNum = 0;
 	        //this.generateWorld();
 	        return _this;
 	    }
@@ -179,7 +204,7 @@
 	    }, {
 	        key: 'componentWillUpdate',
 	        value: function componentWillUpdate(nextProps, nextState) {
-	            if (this.sync && this.state.sync.seed && nextState.user.isModerator) {
+	            if (this.sync && this.state.sync.world.seed && nextState.user.isModerator) {
 	                var onComplete = function onComplete(error) {
 	                    if (error) {
 	                        console.log('Synchronization failed');
@@ -189,11 +214,11 @@
 	                };
 	                this.sync.instance.set(nextState.sync, onComplete);
 	            }
-	            if (nextState.sync.seed != this.state.sync.seed) {
-	                this.simplex = new _simplexNoise2.default(new _randomSeed2.default(nextState.sync.seed).random);
+	            if (nextState.sync.world.seed != this.state.sync.world.seed) {
+	                this.simplex = new _simplexNoise2.default(new _randomSeed2.default(nextState.sync.world.seed).random);
 	            }
-	            if (JSON.stringify(nextState.sync) != JSON.stringify(this.state.sync)) {
-	                this.generateWorld(nextState.sync.width, nextState.sync.height, nextState.sync.depth);
+	            if (JSON.stringify(nextState.sync.world) != JSON.stringify(this.state.sync.world)) {
+	                this.generateWorld(nextState.sync.world.width, nextState.sync.world.height, nextState.sync.world.depth);
 	            }
 	        }
 	    }, {
@@ -201,7 +226,6 @@
 	        value: function render() {
 	            var _this2 = this;
 	
-	            this.renderNum++;
 	            this.box = new Array();
 	
 	            return _react2.default.createElement(
@@ -233,7 +257,7 @@
 	                            }, id: 'terrain' + id }) : null;
 	                    })
 	                ),
-	                this.state.user && (this.state.user.isModerator || this.state.sync.approvedSudoMods.includes(this.state.user.displayName)) ? [_react2.default.createElement(TextControlBtn, {
+	                this.state.user && (this.state.user.isModerator || this.state.approvedSudoMods.includes(this.state.user.displayName)) ? [_react2.default.createElement(TextControlBtn, {
 	                    key: 'newBtn',
 	                    position: new THREE.Vector3(-1, 0.4, -1.5),
 	                    color: '#888888',
@@ -245,7 +269,7 @@
 	                    key: 'widthBtn',
 	                    position: new THREE.Vector3(-1, 0.29, -1.5),
 	                    color: '#884444',
-	                    value: 'Width:' + this.state.sync.width,
+	                    value: 'Width:' + this.state.sync.world.width,
 	                    width: '0.3',
 	                    height: '0.1'
 	                }), _react2.default.createElement(TextControlBtn, {
@@ -268,7 +292,7 @@
 	                    key: 'heightBtn',
 	                    position: new THREE.Vector3(-1, 0.18, -1.5),
 	                    color: '#448844',
-	                    value: 'Height:' + this.state.sync.height,
+	                    value: 'Height:' + this.state.sync.world.height,
 	                    width: '0.3',
 	                    height: '0.1'
 	                }), _react2.default.createElement(TextControlBtn, {
@@ -291,7 +315,7 @@
 	                    key: 'depthBtn',
 	                    position: new THREE.Vector3(-1, 0.07, -1.5),
 	                    color: '#444488',
-	                    value: 'Depth:' + this.state.sync.depth,
+	                    value: 'Depth:' + this.state.sync.world.depth,
 	                    width: '0.3',
 	                    height: '0.1'
 	                }), _react2.default.createElement(TextControlBtn, {
@@ -313,11 +337,12 @@
 	                })] : null,
 	                _react2.default.createElement('a-plane', {
 	                    rotation: '-90 0 0',
-	                    position: this.state.sync.width / 2 + ' 0 ' + this.state.sync.height / 2,
-	                    width: this.state.sync.width + 16,
-	                    height: this.state.sync.height + 16,
+	                    position: this.state.sync.world.width / 2 + ' 0 ' + this.state.sync.world.height / 2,
+	                    width: this.state.sync.world.width + 16,
+	                    height: this.state.sync.world.height + 16,
 	                    src: '#grass',
-	                    repeat: this.state.sync.width + 16 + ' ' + (this.state.sync.height + 16)
+	                    repeat: this.state.sync.world.width + 16 + ' ' + (this.state.sync.world.height + 16),
+	                    sound: 'src: url(../assets/From_Russia_With_Love.mp3); autoplay: true; loop: true; volume: 0.3;'
 	                }),
 	                this.boxSizes.map(function (isSize, id) {
 	                    if (isSize) {
@@ -339,8 +364,7 @@
 	                                    if (box) {
 	                                        _this2.box.push({
 	                                            el: box,
-	                                            height: height,
-	                                            renderNum: _this2.renderNum
+	                                            height: height
 	                                        });
 	                                    }
 	                                },
@@ -374,26 +398,13 @@
 	                                });
 	                            }
 	                        } else if (_this3.state.user.isModerator) {
-	                            _this3.setState(function (state) {
-	                                return _extends({}, state, {
-	                                    owner: true,
-	                                    sync: _extends({}, state.sync, {
-	                                        seed: Math.random() * 999999999
-	                                    })
-	                                });
-	                            });
+	                            _this3.newWorld();
 	                        }
 	                    };
 	                    _this3.sync.instance.on("value", callback);
 	                });
 	            } else {
-	                this.setState(function (state) {
-	                    return _extends({}, state, {
-	                        sync: _extends({}, state.sync, {
-	                            seed: Math.random()
-	                        })
-	                    });
-	                });
+	                this.newWorld();
 	            }
 	        }
 	    }, {
@@ -564,6 +575,8 @@
 	                    _this4.mesh[height] = new THREE.Mesh(new THREE.BufferGeometry().fromGeometry(t.geometry), new THREE.MeshBasicMaterial({
 	                        map: new THREE.CanvasTexture(_this4["terrain" + height])
 	                    }));
+	
+	                    _this4.mesh[height].addBehaviors(new altspace.utilities.behaviors.JointCollisionEvents({ joints: [['Foot']] }));
 	                }
 	            });
 	
@@ -587,6 +600,9 @@
 	                if (box.el && !box.el.getAttribute("n-box-collider")) {
 	                    box.el.setObject3D("mesh", _this4.mesh[box.height].clone());
 	                    box.el.setAttribute("n-box-collider", 'size: 1 ' + box.height + ' 1; type: environment;');
+	                    box.addEventListener('jointcollisionleave', function (e) {
+	                        console.log(e.detail);
+	                    });
 	                }
 	            });
 	        }
