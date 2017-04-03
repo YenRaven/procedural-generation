@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import SimplexNoise from 'simplex-noise';
 import Rand from 'random-seed';
+import shuffle from './util/shuffle.js';
 
 const AppConfig = {
     fullspace:true,
@@ -10,6 +11,8 @@ const AppConfig = {
     appName: "Procedural Generated Terrain",
     author: "YenRaven"
 };
+
+const CSS_COLOR_NAMES = shuffle( ["AliceBlue","AntiqueWhite","Aqua","Aquamarine","Azure","Beige","Bisque","Black","BlanchedAlmond","Blue","BlueViolet","Brown","BurlyWood","CadetBlue","Chartreuse","Chocolate","Coral","CornflowerBlue","Cornsilk","Crimson","Cyan","DarkBlue","DarkCyan","DarkGoldenRod","DarkGray","DarkGrey","DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","Darkorange","DarkOrchid","DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkSlateGray","DarkSlateGrey","DarkTurquoise","DarkViolet","DeepPink","DeepSkyBlue","DimGray","DimGrey","DodgerBlue","FireBrick","FloralWhite","ForestGreen","Fuchsia","Gainsboro","GhostWhite","Gold","GoldenRod","Gray","Grey","Green","GreenYellow","HoneyDew","HotPink","IndianRed","Indigo","Ivory","Khaki","Lavender","LavenderBlush","LawnGreen","LemonChiffon","LightBlue","LightCoral","LightCyan","LightGoldenRodYellow","LightGray","LightGrey","LightGreen","LightPink","LightSalmon","LightSeaGreen","LightSkyBlue","LightSlateGray","LightSlateGrey","LightSteelBlue","LightYellow","Lime","LimeGreen","Linen","Magenta","Maroon","MediumAquaMarine","MediumBlue","MediumOrchid","MediumPurple","MediumSeaGreen","MediumSlateBlue","MediumSpringGreen","MediumTurquoise","MediumVioletRed","MidnightBlue","MintCream","MistyRose","Moccasin","NavajoWhite","Navy","OldLace","Olive","OliveDrab","Orange","OrangeRed","Orchid","PaleGoldenRod","PaleGreen","PaleTurquoise","PaleVioletRed","PapayaWhip","PeachPuff","Peru","Pink","Plum","PowderBlue","Purple","Red","RosyBrown","RoyalBlue","SaddleBrown","Salmon","SandyBrown","SeaGreen","SeaShell","Sienna","Silver","SkyBlue","SlateBlue","SlateGray","SlateGrey","Snow","SpringGreen","SteelBlue","Tan","Teal","Thistle","Tomato","Turquoise","Violet","Wheat","White","WhiteSmoke","Yellow","YellowGreen"]);
 
 class Main extends React.Component {
     constructor(props){
@@ -29,6 +32,7 @@ class Main extends React.Component {
             skeleton:false,
             approvedSudoMods:["YenRaven", "Zerithax"],
             sync:{
+                colors:CSS_COLOR_NAMES,
                 world:{
                     width: 16,
                     height: 16,
@@ -92,6 +96,7 @@ class Main extends React.Component {
 
     render() {
         this.box = new Array();
+        var flagRotation = 0;
 
         return (
             <a-scene
@@ -225,9 +230,10 @@ class Main extends React.Component {
                 sound="src: url(../assets/From_Russia_With_Love.mp3); autoplay: true; loop: true; volume: 0.3;"
             />
             {
-                Object.keys(this.state.sync.climb).map((key) => {
+                Object.keys(this.state.sync.climb).map((key, id, keyList) => {
                     var climb = this.state.sync.climb[key];
-                    return <RecordFlag position={climb} name={key} flagColor="red" />
+                    console.log("Flag color:", this.state.sync.colors[id]);
+                    return <RecordFlag position={climb} name={key} flagColor={this.state.sync.colors[id].toLowerCase()} flagRotation={360/keyList.length * id} />
                 })
             }
             {
@@ -264,17 +270,6 @@ class Main extends React.Component {
             }
             </a-scene>
         )
-    }
-
-    setClimbMarker = (e) => {
-        var pos = e.target.getAttribute("position");
-        this.setState((state) => {
-            var rstate = {...state};
-            rstate.sync.climb[state.user.displayName] = {
-                position: new THREE.Vector3(x, y, z)
-            }
-            return rstate;
-        })
     }
 
     newWorld = () => {
@@ -346,6 +341,7 @@ class Main extends React.Component {
                     let val = data.val();
                     if(val.world){
                         let syncVals = {
+                            colors:val.colors,
                             world:{
                                 ...val.world
                             },
@@ -640,18 +636,20 @@ class RecordFlag extends React.Component {
         return (
             <a-entity position={`${this.props.position.x} ${this.props.position.y} ${this.props.position.z}`}>
                 <a-cylinder color="#888888" height="3" radius="0.025" position="0 1.5 0" />
-                <a-plane color={this.props.flagColor} width="1" height="0.6" position="0.5 2.7 0">
-                    <a-entity
-                        position="0 0 0.03"
-                        n-text={`text: ${this.props.name}; fontSize: 1; horizontalAlign: center;`}>
-                    </a-entity>
-                </a-plane>
-                <a-plane color={this.props.flagColor} width="1" height="0.6" position="0.5 2.7 0" rotation="0 180 0">
-                    <a-entity
-                        position="0 0 0.03"
-                        n-text={`text: ${this.props.name}; fontSize: 1; horizontalAlign: center;`}>
-                    </a-entity>
-                </a-plane>
+                <a-entity position="0 2.7 0" rotation={`0 ${this.props.flagRotation} 0`}>
+                    <a-plane color={this.props.flagColor} width="1" height="0.6" position="0.5 0 0">
+                        <a-entity
+                            position="0 0 0.03"
+                            n-text={`text: ${this.props.name}; fontSize: 1; horizontalAlign: center;`}>
+                        </a-entity>
+                    </a-plane>
+                    <a-plane color={this.props.flagColor} width="1" height="0.6" position="0.5 0 0" rotation="0 180 0">
+                        <a-entity
+                            position="0 0 0.03"
+                            n-text={`text: ${this.props.name}; fontSize: 1; horizontalAlign: center;`}>
+                        </a-entity>
+                    </a-plane>
+                </a-entity>
             </a-entity>
         )
     }
