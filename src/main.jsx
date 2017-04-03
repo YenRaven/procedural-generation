@@ -83,7 +83,9 @@ class Main extends React.Component {
             if(nextState.user.isModerator){
                 this.sync.instance.set(nextState.sync, onComplete);
             }else{
-                this.sync.instance.child("climb").set(nextState.sync.climb, onComplete);
+                if(JSON.stringify(this.state.sync.climb[this.state.user.displayName]) != JSON.stringify(nextState.sync.climb[nextState.user.displayName])){
+                    this.sync.instance.child("climb/"+this.state.user.displayName).set(nextState.sync.climb[this.state.user.displayName], onComplete);
+                }
             }
         }
         if(nextState.sync.world.seed != this.state.sync.world.seed){
