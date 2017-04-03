@@ -82,6 +82,121 @@
 	    author: "YenRaven"
 	};
 	
+	var JointCollisionEvents = function JointCollisionEvents(_config) {
+	    var object3d;
+	    var config = _config || {};
+	
+	    config.jointCubeSize = config.jointCubeSize || 15;
+	    config.joints = config.joints || altspace.utilities.behaviors.JointCollisionEvents.HAND_JOINTS;
+	
+	    var skeleton;
+	    var jointCube;
+	    var hasCollided = false;
+	    var collidedJoints = [];
+	    var jointIntersectUnion = null;
+	    var scene;
+	
+	    function updateSkeleton() {
+	        scene.traverse(function (child) {
+	            if (child.type === 'TrackingSkeleton') {
+	                skeleton = child;
+	                return;
+	            }
+	        });
+	    }
+	
+	    function awake(o, s) {
+	        object3d = o;
+	        scene = s;
+	        updateSkeleton();
+	
+	        jointCube = new THREE.Vector3(config.jointCubeSize, config.jointCubeSize, config.jointCubeSize);
+	    }
+	
+	    function update(deltaTime) {
+	        if (!skeleton) updateSkeleton();
+	        if (!skeleton) return;
+	
+	        // Collect joints based on joints config option
+	        var joints = [];
+	        for (var i = 0; i < config.joints.length; i++) {
+	            joints[i] = skeleton.getJoint(config.joints[i][0], config.joints[i][1], config.joints[i][2] ? config.joints[i][2] : 0);
+	        }
+	
+	        // Get bounding box of owner object
+	        var objectBB = new THREE.Box3().setFromObject(object3d);
+	
+	        // Add up all colliding joint intersects
+	        var prevJointIntersectUnion = jointIntersectUnion;
+	        jointIntersectUnion = null;
+	
+	        var prevCollidedJoints = collidedJoints;
+	        collidedJoints = [];
+	
+	        var hasPrevCollided = hasCollided;
+	        hasCollided = false;
+	
+	        if (object3d.visible && object3d.scale.x > Number.EPSILON && object3d.scale.y > Number.EPSILON && object3d.scale.z > Number.EPSILON) {
+	            for (var i = 0; i < config.joints.length; i++) {
+	                var joint = joints[i];
+	                if (joint && joint.confidence !== 0) {
+	                    var jointBB = new THREE.Box3().setFromCenterAndSize(joint.position, jointCube);
+	                    var collision = objectBB.intersectsBox(jointBB);
+	                    if (collision) {
+	                        var intersectBB = objectBB.intersect(jointBB);
+	                        if (jointIntersectUnion) {
+	                            jointIntersectUnion.union(intersectBB);
+	                        } else {
+	                            jointIntersectUnion = intersectBB;
+	                        }
+	
+	                        hasCollided = true;
+	                        collidedJoints.push(joint);
+	                    }
+	                }
+	            }
+	        }
+	
+	        // Dispatch collision event
+	        if (!hasPrevCollided && hasCollided) {
+	            object3d.dispatchEvent({
+	                type: 'jointcollisionenter',
+	                detail: {
+	                    intersect: jointIntersectUnion,
+	                    joints: collidedJoints
+	                },
+	                bubbles: true,
+	                target: object3d
+	            });
+	        } else if (hasPrevCollided && !hasCollided) {
+	            object3d.dispatchEvent({
+	                type: 'jointcollisionleave',
+	                detail: {
+	                    intersect: prevJointIntersectUnion || new THREE.Box3(),
+	                    joints: prevCollidedJoints
+	                },
+	                bubbles: true,
+	                target: object3d
+	            });
+	        }
+	
+	        // Dispatch collision event
+	        if (hasCollided) {
+	            object3d.dispatchEvent({
+	                type: 'jointcollision',
+	                detail: {
+	                    intersect: jointIntersectUnion,
+	                    joints: collidedJoints
+	                },
+	                bubbles: true,
+	                target: object3d
+	            });
+	        }
+	    }
+	
+	    return { awake: awake, update: update, type: 'JointCollisionEvents' };
+	};
+	
 	var Main = function (_React$Component) {
 	    _inherits(Main, _React$Component);
 	
@@ -164,6 +279,7 @@
 	        _this.boxId = 0;
 	
 	        _this.state = {
+	            enclosure: false,
 	            user: false,
 	            skeleton: false,
 	            approvedSudoMods: ["YenRaven", "Zerithax"],
@@ -184,6 +300,9 @@
 	            });
 	            altspace.getThreeJSTrackingSkeleton().then(function (skeleton) {
 	                _this.setState({ skeleton: skeleton });
+	            });
+	            altspace.getEnclosure().then(function (enclosure) {
+	                _this.setState({ enclosure: enclosure });
 	            });
 	        }
 	
@@ -353,13 +472,13 @@
 	                        return null;
 	                    }
 	                }),
-	                this.terrain.map(function (x, xid) {
+	                this.state.skeleton && this.state.user && this.state.enclosure && this.terrain.map(function (x, xid) {
 	                    return x.map(function (y, yid) {
 	                        return y.map(function (block, zid) {
 	                            var height = block.end - block.start;
 	                            var position = new THREE.Vector3(xid, height / 2 + (block.start - 1), yid);
 	                            return _react2.default.createElement('a-entity', {
-	                                mixin: 'blockMerge' + height,
+	                                mixin: true ? null : 'blockMerge' + height,
 	                                ref: function ref(box) {
 	                                    if (box) {
 	                                        _this2.box.push({
@@ -413,8 +532,8 @@
 	            this.meshBoxes();
 	        }
 	    }, {
-	        key: 'generateTexture',
-	        value: function generateTexture(height) {
+	        key: 'generateGeometry',
+	        value: function generateGeometry(height) {
 	            //var uv16 = 1 / (height * 2 + 1);
 	            var uvH = height / (height * 2 + 1);
 	
@@ -522,7 +641,7 @@
 	                                var h = z - blockStart;
 	                                this.boxSizes[h] = true;
 	                                if (!this.terrainTextures[h]) {
-	                                    this.terrainTextures[h] = this.generateTexture(h);
+	                                    this.terrainTextures[h] = this.generateGeometry(h);
 	                                }
 	                                blockStart = null;
 	                            }
@@ -575,8 +694,6 @@
 	                    _this4.mesh[height] = new THREE.Mesh(new THREE.BufferGeometry().fromGeometry(t.geometry), new THREE.MeshBasicMaterial({
 	                        map: new THREE.CanvasTexture(_this4["terrain" + height])
 	                    }));
-	
-	                    _this4.mesh[height].addBehaviors(new altspace.utilities.behaviors.JointCollisionEvents({ joints: [['Foot']] }));
 	                }
 	            });
 	
@@ -598,10 +715,12 @@
 	
 	            this.box.forEach(function (box) {
 	                if (box.el && !box.el.getAttribute("n-box-collider")) {
-	                    box.el.setObject3D("mesh", _this4.mesh[box.height].clone());
+	                    var mesh = _this4.mesh[box.height].clone();
+	                    mesh.addBehaviors(new /*altspace.utilities.behaviors.*/JointCollisionEvents({ jointCubeSize: 0.02 * _this4.state.enclosure.pixelsPerMeter }));
+	                    box.el.setObject3D("mesh", mesh);
 	                    box.el.setAttribute("n-box-collider", 'size: 1 ' + box.height + ' 1; type: environment;');
-	                    box.addEventListener('jointcollisionleave', function (e) {
-	                        console.log(e.detail);
+	                    box.el.object3D.addEventListener('jointcollision', function (e) {
+	                        console.log("TRIGGERED!", e.detail);
 	                    });
 	                }
 	            });

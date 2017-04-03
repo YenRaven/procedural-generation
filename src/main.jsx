@@ -11,6 +11,135 @@ const AppConfig = {
     author: "YenRaven"
 };
 
+const JointCollisionEvents = function(_config) {
+				var object3d;
+				var config = _config || {};
+
+				config.jointCubeSize = config.jointCubeSize || 15;
+				config.joints = config.joints || altspace.utilities.behaviors.JointCollisionEvents.HAND_JOINTS;
+
+				var skeleton;
+				var jointCube;
+				var hasCollided = false;
+				var collidedJoints = [];
+				var jointIntersectUnion = null;
+				var scene;
+
+				function updateSkeleton() {
+					scene.traverse(function(child) {
+						if(child.type === 'TrackingSkeleton') {
+							skeleton = child;
+							return;
+						}
+					});
+				}
+
+				function awake(o, s) {
+					object3d = o;
+					scene = s;
+					updateSkeleton();
+
+					jointCube = new THREE.Vector3(
+						config.jointCubeSize,
+						config.jointCubeSize,
+						config.jointCubeSize
+					);
+				}
+
+				function update(deltaTime) {
+					if(!skeleton) updateSkeleton();
+					if(!skeleton) return;
+
+					// Collect joints based on joints config option
+					var joints = [];
+					for(var i = 0; i < config.joints.length; i++) {
+						joints[i] = skeleton.getJoint(
+							config.joints[i][0],
+							config.joints[i][1],
+							config.joints[i][2] ? config.joints[i][2] : 0
+						);
+					}
+
+					// Get bounding box of owner object
+					var objectBB = new THREE.Box3().setFromObject(object3d);
+
+					// Add up all colliding joint intersects
+					var prevJointIntersectUnion = jointIntersectUnion;
+					jointIntersectUnion = null;
+
+					var prevCollidedJoints = collidedJoints;
+					collidedJoints = [];
+
+					var hasPrevCollided = hasCollided;
+					hasCollided = false;
+
+					if(
+						object3d.visible &&
+						object3d.scale.x > Number.EPSILON &&
+						object3d.scale.y > Number.EPSILON &&
+						object3d.scale.z > Number.EPSILON
+					) {
+						for(var i = 0; i < config.joints.length; i++) {
+							var joint = joints[i];
+							if(joint && joint.confidence !== 0) {
+								var jointBB = new THREE.Box3().setFromCenterAndSize(joint.position, jointCube);
+								var collision = objectBB.intersectsBox(jointBB);
+								if(collision) {
+									var intersectBB = objectBB.intersect(jointBB);
+									if(jointIntersectUnion) {
+										jointIntersectUnion.union(intersectBB);
+									} else {
+										jointIntersectUnion = intersectBB;
+									}
+
+									hasCollided = true;
+									collidedJoints.push(joint);
+								}
+							}
+						}
+					}
+
+					// Dispatch collision event
+					if(!hasPrevCollided && hasCollided) {
+						object3d.dispatchEvent({
+							type: 'jointcollisionenter',
+							detail: {
+								intersect: jointIntersectUnion,
+								joints: collidedJoints
+							},
+							bubbles: true,
+							target: object3d
+						});
+					}
+					else if(hasPrevCollided && !hasCollided) {
+						object3d.dispatchEvent({
+							type: 'jointcollisionleave',
+							detail: {
+								intersect: prevJointIntersectUnion || new THREE.Box3(),
+								joints: prevCollidedJoints
+							},
+							bubbles: true,
+							target: object3d
+						});
+					}
+
+					// Dispatch collision event
+					if(hasCollided) {
+						object3d.dispatchEvent({
+							type: 'jointcollision',
+							detail: {
+								intersect: jointIntersectUnion,
+								joints: collidedJoints
+							},
+							bubbles: true,
+							target: object3d
+						});
+					}
+				}
+
+				return { awake: awake, update: update, type: 'JointCollisionEvents' };
+			};
+
 class Main extends React.Component {
     constructor(props){
         super(props);
@@ -24,6 +153,7 @@ class Main extends React.Component {
         this.boxId = 0;
 
         this.state = {
+            enclosure: false,
             user:false,
             skeleton:false,
             approvedSudoMods:["YenRaven", "Zerithax"],
@@ -44,6 +174,9 @@ class Main extends React.Component {
             });
             altspace.getThreeJSTrackingSkeleton().then((skeleton) => {
                 this.setState({skeleton});
+            });
+            altspace.getEnclosure().then((enclosure) => {
+                this.setState({enclosure});
             });
         }
 
@@ -222,13 +355,14 @@ class Main extends React.Component {
                 })
             }
             {
+                this.state.skeleton && this.state.user && this.state.enclosure &&
                 this.terrain.map((x, xid) => {
                     return x.map((y, yid) => {
                         return y.map((block, zid) => {
                             let height = block.end - block.start;
                             let position = new THREE.Vector3(xid, height/2 + (block.start - 1), yid);
                             return <a-entity
-                                    mixin={`blockMerge${height}`}
+                                    mixin={true?null:`blockMerge${height}`}
                                     ref = {(box) => {
                                         if(box){
                                             this.box.push({
@@ -351,7 +485,7 @@ class Main extends React.Component {
         this.meshBoxes();
     }
 
-    generateTexture(height){
+    generateGeometry(height){
         //var uv16 = 1 / (height * 2 + 1);
         var uvH = height / (height * 2 + 1);
 
@@ -489,7 +623,7 @@ class Main extends React.Component {
                             var h = z - blockStart;
                             this.boxSizes[h] = true;
                             if(!this.terrainTextures[h]){
-                                this.terrainTextures[h] = this.generateTexture(h);
+                                this.terrainTextures[h] = this.generateGeometry(h);
                             }
                             blockStart = null;
                         }
@@ -544,10 +678,6 @@ class Main extends React.Component {
                         map: new THREE.CanvasTexture(this["terrain"+height])
                     })
                 )
-
-                this.mesh[height].addBehaviors(
-                    new altspace.utilities.behaviors.JointCollisionEvents({joints: [['Foot']]})
-                );
             }
         });
 
@@ -569,10 +699,14 @@ class Main extends React.Component {
 
         this.box.forEach((box) => {
             if(box.el && !box.el.getAttribute("n-box-collider")){
-                box.el.setObject3D("mesh", this.mesh[box.height].clone());
+                let mesh = this.mesh[box.height].clone();
+                mesh.addBehaviors(
+                    new /*altspace.utilities.behaviors.*/JointCollisionEvents({jointCubeSize: 0.02 * this.state.enclosure.pixelsPerMeter})
+                );
+                box.el.setObject3D("mesh", mesh);
                 box.el.setAttribute("n-box-collider", `size: 1 ${box.height} 1; type: environment;`);
-                box.addEventListener('jointcollisionleave', (e)=>{
-                    console.log(e.detail);
+                box.el.object3D.addEventListener('jointcollision', (e)=>{
+                    console.log("TRIGGERED!", e.detail);
                 });
             }
         });
