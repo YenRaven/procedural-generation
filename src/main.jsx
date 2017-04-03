@@ -230,7 +230,7 @@ class Main extends React.Component {
             />
             <a-entity
                 position="0 0 0"
-                sound="src: url(../assets/From_Russia_With_Love.mp3); autoplay: true; loop: true; volume: 0.03;"
+                sound="src: url(../assets/From_Russia_With_Love.mp3); autoplay: true; loop: true; volume: 0.01;"
             />
             {
                 Object.keys(this.state.sync.climb).map((key, id, keyList) => {
