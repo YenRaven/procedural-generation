@@ -131,7 +131,7 @@ class Main extends React.Component {
                     })
                 }
             </a-assets>
-            {(this.state.user && (this.state.user.isModerator || this.state.approvedSudoMods.includes(this.state.user.displayName) && !debugClient)) ? [
+            {(this.state.user && (this.state.user.isModerator || this.state.approvedSudoMods.includes(this.state.user.displayName)) && !debugClient) ? [
                 <TextControlBtn
                     key="newBtn"
                     position={new THREE.Vector3(-1, 0.4, -1.5)}
