@@ -351,7 +351,7 @@
 	                }),
 	                _react2.default.createElement('a-entity', {
 	                    position: '0 0 0',
-	                    sound: 'src: url(../assets/From_Russia_With_Love.mp3); autoplay: true; loop: true; volume: 0.03;'
+	                    sound: 'src: url(../assets/From_Russia_With_Love.mp3); autoplay: true; loop: true; volume: 0.01;'
 	                }),
 	                Object.keys(this.state.sync.climb).map(function (key, id, keyList) {
 	                    var climb = _this2.state.sync.climb[key];
