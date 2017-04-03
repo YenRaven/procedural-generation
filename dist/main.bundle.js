@@ -82,121 +82,6 @@
 	    author: "YenRaven"
 	};
 	
-	var JointCollisionEvents = function JointCollisionEvents(_config) {
-	    var object3d;
-	    var config = _config || {};
-	
-	    config.jointCubeSize = config.jointCubeSize || 15;
-	    config.joints = config.joints || altspace.utilities.behaviors.JointCollisionEvents.HAND_JOINTS;
-	
-	    var skeleton;
-	    var jointCube;
-	    var hasCollided = false;
-	    var collidedJoints = [];
-	    var jointIntersectUnion = null;
-	    var scene;
-	
-	    function updateSkeleton() {
-	        scene.traverse(function (child) {
-	            if (child.type === 'TrackingSkeleton') {
-	                skeleton = child;
-	                return;
-	            }
-	        });
-	    }
-	
-	    function awake(o, s) {
-	        object3d = o;
-	        scene = s;
-	        updateSkeleton();
-	
-	        jointCube = new THREE.Vector3(config.jointCubeSize, config.jointCubeSize, config.jointCubeSize);
-	    }
-	
-	    function update(deltaTime) {
-	        if (!skeleton) updateSkeleton();
-	        if (!skeleton) return;
-	
-	        // Collect joints based on joints config option
-	        var joints = [];
-	        for (var i = 0; i < config.joints.length; i++) {
-	            joints[i] = skeleton.getJoint(config.joints[i][0], config.joints[i][1], config.joints[i][2] ? config.joints[i][2] : 0);
-	        }
-	
-	        // Get bounding box of owner object
-	        var objectBB = new THREE.Box3().setFromObject(object3d);
-	
-	        // Add up all colliding joint intersects
-	        var prevJointIntersectUnion = jointIntersectUnion;
-	        jointIntersectUnion = null;
-	
-	        var prevCollidedJoints = collidedJoints;
-	        collidedJoints = [];
-	
-	        var hasPrevCollided = hasCollided;
-	        hasCollided = false;
-	
-	        if (object3d.visible && object3d.scale.x > Number.EPSILON && object3d.scale.y > Number.EPSILON && object3d.scale.z > Number.EPSILON) {
-	            for (var i = 0; i < config.joints.length; i++) {
-	                var joint = joints[i];
-	                if (joint && joint.confidence !== 0) {
-	                    var jointBB = new THREE.Box3().setFromCenterAndSize(joint.position, jointCube);
-	                    var collision = objectBB.intersectsBox(jointBB);
-	                    if (collision) {
-	                        var intersectBB = objectBB.intersect(jointBB);
-	                        if (jointIntersectUnion) {
-	                            jointIntersectUnion.union(intersectBB);
-	                        } else {
-	                            jointIntersectUnion = intersectBB;
-	                        }
-	
-	                        hasCollided = true;
-	                        collidedJoints.push(joint);
-	                    }
-	                }
-	            }
-	        }
-	
-	        // Dispatch collision event
-	        if (!hasPrevCollided && hasCollided) {
-	            object3d.dispatchEvent({
-	                type: 'jointcollisionenter',
-	                detail: {
-	                    intersect: jointIntersectUnion,
-	                    joints: collidedJoints
-	                },
-	                bubbles: true,
-	                target: object3d
-	            });
-	        } else if (hasPrevCollided && !hasCollided) {
-	            object3d.dispatchEvent({
-	                type: 'jointcollisionleave',
-	                detail: {
-	                    intersect: prevJointIntersectUnion || new THREE.Box3(),
-	                    joints: prevCollidedJoints
-	                },
-	                bubbles: true,
-	                target: object3d
-	            });
-	        }
-	
-	        // Dispatch collision event
-	        if (hasCollided) {
-	            object3d.dispatchEvent({
-	                type: 'jointcollision',
-	                detail: {
-	                    intersect: jointIntersectUnion,
-	                    joints: collidedJoints
-	                },
-	                bubbles: true,
-	                target: object3d
-	            });
-	        }
-	    }
-	
-	    return { awake: awake, update: update, type: 'JointCollisionEvents' };
-	};
-	
 	var Main = function (_React$Component) {
 	    _inherits(Main, _React$Component);
 	
@@ -222,7 +107,8 @@
 	                    sync: _extends({}, state.sync, {
 	                        world: _extends({}, state.sync.world, {
 	                            seed: Math.random() * 999999999
-	                        })
+	                        }),
+	                        climb: {}
 	                    })
 	                });
 	            });
@@ -295,18 +181,18 @@
 	        };
 	
 	        if (altspace.getUser) {
-	            altspace.getUser().then(function (user) {
-	                _this.setState({ user: user });
-	            });
-	            altspace.getThreeJSTrackingSkeleton().then(function (skeleton) {
-	                _this.setState({ skeleton: skeleton });
-	            });
-	            altspace.getEnclosure().then(function (enclosure) {
-	                _this.setState({ enclosure: enclosure });
+	            Promise.all([altspace.getUser(), altspace.getThreeJSTrackingSkeleton(), altspace.getEnclosure()]).then(function (values) {
+	                _this.setState({
+	                    user: values[0],
+	                    skeleton: values[1],
+	                    enclosure: values[2]
+	                });
 	            });
 	        }
 	
 	        _this.boxSizes = new Array(_this.state.height);
+	
+	        _this.climberRaycaster = new THREE.Raycaster();
 	
 	        //this.generateWorld();
 	        return _this;
@@ -463,6 +349,10 @@
 	                    repeat: this.state.sync.world.width + 16 + ' ' + (this.state.sync.world.height + 16),
 	                    sound: 'src: url(../assets/From_Russia_With_Love.mp3); autoplay: true; loop: true; volume: 0.3;'
 	                }),
+	                Object.keys(this.state.sync.climb).map(function (key) {
+	                    var climb = _this2.state.sync.climb[key];
+	                    return _react2.default.createElement(RecordFlag, { position: climb });
+	                }),
 	                this.boxSizes.map(function (isSize, id) {
 	                    if (isSize) {
 	                        return _react2.default.createElement('a-entity', { key: id, id: 'blockMerge' + id, ref: function ref(merged) {
@@ -504,12 +394,10 @@
 	                    _this3.sync = _this3.scene.systems['sync-system'].connection;
 	                    var callback = function callback(data) {
 	                        var val = data.val();
-	                        if (val.seed) {
+	                        if (val.world) {
 	                            var syncVals = {
-	                                width: val.width,
-	                                height: val.height,
-	                                depth: val.depth,
-	                                seed: val.seed
+	                                world: _extends({}, val.world),
+	                                climb: _extends({}, val.climb)
 	                            };
 	                            if (JSON.stringify(syncVals) != JSON.stringify(_this3.state.sync)) {
 	                                _this3.setState({
@@ -525,6 +413,41 @@
 	            } else {
 	                this.newWorld();
 	            }
+	
+	            setInterval(function () {
+	                if (_this3.state.skeleton) {
+	                    var spinePos = _this3.state.skeleton.getJoint("Spine").getWorldPosition();
+	                    var topBoxPos = { y: 0 };
+	                    _this3.box.forEach(function (box) {
+	                        var boxPos = box.el.getAttribute("position");
+	                        if (boxPos.y + box.height / 2 < spinePos.y) {
+	                            if (boxPos.x - 0.5 < spinePos.x && boxPos.x + 0.5 > spinePos.x) {
+	                                if (boxPos.z - 0.5 < spinePos.z && boxPos.z + 0.5 > spinePos.z) {
+	                                    if (topBoxPos.y < boxPos.y + box.height / 2) {
+	                                        topBoxPos = _extends({}, boxPos, {
+	                                            y: boxPos.y + box.height / 2
+	                                        });
+	                                    }
+	                                }
+	                            }
+	                        }
+	                    });
+	
+	                    if (topBoxPos.y > 0) {
+	                        if (!_this3.state.sync.climb[_this3.state.user.displayName] || _this3.state.sync.climb[_this3.state.user.displayName].y < topBoxPos.y) {
+	                            _this3.setState(function (state) {
+	                                var newState = _extends({}, state, {
+	                                    sync: _extends({}, state.sync, {
+	                                        climb: _extends({}, state.sync.climb)
+	                                    })
+	                                });
+	                                newState.sync.climb[state.user.displayName] = topBoxPos;
+	                                return newState;
+	                            });
+	                        }
+	                    }
+	                }
+	            }, 500);
 	        }
 	    }, {
 	        key: 'componentDidUpdate',
@@ -716,12 +639,8 @@
 	            this.box.forEach(function (box) {
 	                if (box.el && !box.el.getAttribute("n-box-collider")) {
 	                    var mesh = _this4.mesh[box.height].clone();
-	                    mesh.addBehaviors(new /*altspace.utilities.behaviors.*/JointCollisionEvents({ jointCubeSize: 0.02 * _this4.state.enclosure.pixelsPerMeter }));
 	                    box.el.setObject3D("mesh", mesh);
 	                    box.el.setAttribute("n-box-collider", 'size: 1 ' + box.height + ' 1; type: environment;');
-	                    box.el.object3D.addEventListener('jointcollision', function (e) {
-	                        console.log("TRIGGERED!", e.detail);
-	                    });
 	                }
 	            });
 	        }
@@ -730,8 +649,27 @@
 	    return Main;
 	}(_react2.default.Component);
 	
-	var TextControlBtn = function (_React$Component2) {
-	    _inherits(TextControlBtn, _React$Component2);
+	var RecordFlag = function (_React$Component2) {
+	    _inherits(RecordFlag, _React$Component2);
+	
+	    function RecordFlag() {
+	        _classCallCheck(this, RecordFlag);
+	
+	        return _possibleConstructorReturn(this, (RecordFlag.__proto__ || Object.getPrototypeOf(RecordFlag)).apply(this, arguments));
+	    }
+	
+	    _createClass(RecordFlag, [{
+	        key: 'render',
+	        value: function render() {
+	            return _react2.default.createElement('a-cylinder', { color: '#888888', height: '3', radius: '0.025', position: this.props.position.x + ' ' + (this.props.position.y + 1.5) + ' ' + this.props.position.z });
+	        }
+	    }]);
+	
+	    return RecordFlag;
+	}(_react2.default.Component);
+	
+	var TextControlBtn = function (_React$Component3) {
+	    _inherits(TextControlBtn, _React$Component3);
 	
 	    function TextControlBtn() {
 	        _classCallCheck(this, TextControlBtn);
@@ -742,13 +680,13 @@
 	    _createClass(TextControlBtn, [{
 	        key: 'render',
 	        value: function render() {
-	            var _this6 = this;
+	            var _this7 = this;
 	
 	            return _react2.default.createElement(
 	                'a-plane',
 	                {
 	                    ref: function ref(el) {
-	                        _this6.el = el;
+	                        _this7.el = el;
 	                    },
 	                    position: this.props.position.x + ' ' + this.props.position.y + ' ' + this.props.position.z,
 	                    onClick: this.props.onClick,

@@ -11,135 +11,6 @@ const AppConfig = {
     author: "YenRaven"
 };
 
-const JointCollisionEvents = function(_config) {
-				var object3d;
-				var config = _config || {};
-
-				config.jointCubeSize = config.jointCubeSize || 15;
-				config.joints = config.joints || altspace.utilities.behaviors.JointCollisionEvents.HAND_JOINTS;
-
-				var skeleton;
-				var jointCube;
-				var hasCollided = false;
-				var collidedJoints = [];
-				var jointIntersectUnion = null;
-				var scene;
-
-				function updateSkeleton() {
-					scene.traverse(function(child) {
-						if(child.type === 'TrackingSkeleton') {
-							skeleton = child;
-							return;
-						}
-					});
-				}
-
-				function awake(o, s) {
-					object3d = o;
-					scene = s;
-					updateSkeleton();
-
-					jointCube = new THREE.Vector3(
-						config.jointCubeSize,
-						config.jointCubeSize,
-						config.jointCubeSize
-					);
-				}
-
-				function update(deltaTime) {
-					if(!skeleton) updateSkeleton();
-					if(!skeleton) return;
-
-					// Collect joints based on joints config option
-					var joints = [];
-					for(var i = 0; i < config.joints.length; i++) {
-						joints[i] = skeleton.getJoint(
-							config.joints[i][0],
-							config.joints[i][1],
-							config.joints[i][2] ? config.joints[i][2] : 0
-						);
-					}
-
-					// Get bounding box of owner object
-					var objectBB = new THREE.Box3().setFromObject(object3d);
-
-					// Add up all colliding joint intersects
-					var prevJointIntersectUnion = jointIntersectUnion;
-					jointIntersectUnion = null;
-
-					var prevCollidedJoints = collidedJoints;
-					collidedJoints = [];
-
-					var hasPrevCollided = hasCollided;
-					hasCollided = false;
-
-					if(
-						object3d.visible &&
-						object3d.scale.x > Number.EPSILON &&
-						object3d.scale.y > Number.EPSILON &&
-						object3d.scale.z > Number.EPSILON
-					) {
-						for(var i = 0; i < config.joints.length; i++) {
-							var joint = joints[i];
-							if(joint && joint.confidence !== 0) {
-								var jointBB = new THREE.Box3().setFromCenterAndSize(joint.position, jointCube);
-								var collision = objectBB.intersectsBox(jointBB);
-								if(collision) {
-									var intersectBB = objectBB.intersect(jointBB);
-									if(jointIntersectUnion) {
-										jointIntersectUnion.union(intersectBB);
-									} else {
-										jointIntersectUnion = intersectBB;
-									}
-
-									hasCollided = true;
-									collidedJoints.push(joint);
-								}
-							}
-						}
-					}
-
-					// Dispatch collision event
-					if(!hasPrevCollided && hasCollided) {
-						object3d.dispatchEvent({
-							type: 'jointcollisionenter',
-							detail: {
-								intersect: jointIntersectUnion,
-								joints: collidedJoints
-							},
-							bubbles: true,
-							target: object3d
-						});
-					}
-					else if(hasPrevCollided && !hasCollided) {
-						object3d.dispatchEvent({
-							type: 'jointcollisionleave',
-							detail: {
-								intersect: prevJointIntersectUnion || new THREE.Box3(),
-								joints: prevCollidedJoints
-							},
-							bubbles: true,
-							target: object3d
-						});
-					}
-
-					// Dispatch collision event
-					if(hasCollided) {
-						object3d.dispatchEvent({
-							type: 'jointcollision',
-							detail: {
-								intersect: jointIntersectUnion,
-								joints: collidedJoints
-							},
-							bubbles: true,
-							target: object3d
-						});
-					}
-				}
-
-				return { awake: awake, update: update, type: 'JointCollisionEvents' };
-			};
-
 class Main extends React.Component {
     constructor(props){
         super(props);
@@ -169,18 +40,22 @@ class Main extends React.Component {
         }
 
         if(altspace.getUser){
-            altspace.getUser().then((user) => {
-                this.setState({user});
-            });
-            altspace.getThreeJSTrackingSkeleton().then((skeleton) => {
-                this.setState({skeleton});
-            });
-            altspace.getEnclosure().then((enclosure) => {
-                this.setState({enclosure});
+            Promise.all([
+                altspace.getUser(),
+                altspace.getThreeJSTrackingSkeleton(),
+                altspace.getEnclosure()
+            ]).then((values) => {
+                this.setState({
+                    user:values[0],
+                    skeleton:values[1],
+                    enclosure:values[2]
+                });
             });
         }
 
         this.boxSizes = new Array(this.state.height);
+
+        this.climberRaycaster = new THREE.Raycaster();
 
         //this.generateWorld();
     }
@@ -346,6 +221,12 @@ class Main extends React.Component {
                 sound="src: url(../assets/From_Russia_With_Love.mp3); autoplay: true; loop: true; volume: 0.3;"
             />
             {
+                Object.keys(this.state.sync.climb).map((key) => {
+                    var climb = this.state.sync.climb[key];
+                    return <RecordFlag position={climb} />
+                })
+            }
+            {
                 this.boxSizes.map((isSize, id)=>{
                     if(isSize){
                         return <a-entity key={id} id={`blockMerge${id}`} ref={(merged) => {this.merged[id] = merged;}}></a-entity>
@@ -401,7 +282,8 @@ class Main extends React.Component {
                     world:{
                         ...state.sync.world,
                         seed:Math.random()*999999999
-                    }
+                    },
+                    climb:{}
                 }
             }
         })
@@ -458,12 +340,14 @@ class Main extends React.Component {
                 this.sync = this.scene.systems['sync-system'].connection;
                 var callback = (data) => {
                     let val = data.val();
-                    if(val.seed){
+                    if(val.world){
                         let syncVals = {
-                            width: val.width,
-                            height: val.height,
-                            depth: val.depth,
-                            seed: val.seed
+                            world:{
+                                ...val.world
+                            },
+                            climb:{
+                                ...val.climb
+                            }
                         };
                         if(JSON.stringify(syncVals) != JSON.stringify(this.state.sync)){
                             this.setState({
@@ -479,6 +363,46 @@ class Main extends React.Component {
         }else{
             this.newWorld();
         }
+
+        setInterval(() => {
+            if(this.state.skeleton){
+                let spinePos = this.state.skeleton.getJoint("Spine").getWorldPosition();
+                let topBoxPos = {y: 0};
+                this.box.forEach((box) => {
+                    let boxPos = box.el.getAttribute("position");
+                    if(boxPos.y + box.height/2 < spinePos.y){
+                        if(boxPos.x - 0.5 < spinePos.x && boxPos.x + 0.5 > spinePos.x){
+                            if(boxPos.z - 0.5 < spinePos.z && boxPos.z + 0.5 > spinePos.z){
+                                if(topBoxPos.y < boxPos.y + box.height/2){
+                                    topBoxPos = {
+                                        ...boxPos,
+                                        y: boxPos.y + box.height/2
+                                    }
+                                }
+                            }
+                        }
+                    }
+                })
+
+                if(topBoxPos.y > 0){
+                    if(!this.state.sync.climb[this.state.user.displayName] || this.state.sync.climb[this.state.user.displayName].y < topBoxPos.y){
+                        this.setState((state) => {
+                            var newState = {
+                                ...state,
+                                sync:{
+                                    ...state.sync,
+                                    climb:{
+                                        ...state.sync.climb
+                                    }
+                                }
+                            };
+                            newState.sync.climb[state.user.displayName] = topBoxPos;
+                            return newState;
+                        })
+                    }
+                }
+            }
+        }, 500);
     }
 
     componentDidUpdate(){
@@ -700,16 +624,18 @@ class Main extends React.Component {
         this.box.forEach((box) => {
             if(box.el && !box.el.getAttribute("n-box-collider")){
                 let mesh = this.mesh[box.height].clone();
-                mesh.addBehaviors(
-                    new /*altspace.utilities.behaviors.*/JointCollisionEvents({jointCubeSize: 0.02 * this.state.enclosure.pixelsPerMeter})
-                );
                 box.el.setObject3D("mesh", mesh);
                 box.el.setAttribute("n-box-collider", `size: 1 ${box.height} 1; type: environment;`);
-                box.el.object3D.addEventListener('jointcollision', (e)=>{
-                    console.log("TRIGGERED!", e.detail);
-                });
             }
         });
+    }
+}
+
+class RecordFlag extends React.Component {
+    render(){
+        return (
+            <a-cylinder color="#888888" height="3" radius="0.025" position={`${this.props.position.x} ${this.props.position.y+1.5} ${this.props.position.z}`} />
+        )
     }
 }
 
