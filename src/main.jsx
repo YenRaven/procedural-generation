@@ -32,7 +32,7 @@ class Main extends React.Component {
             enclosure: false,
             user:false,
             skeleton:false,
-            approvedSudoMods:["YenRaven", "Zerithax"],
+            approvedSudoMods:["Zerithax"],
             sync:{
                 colors:CSS_COLOR_NAMES,
                 world:{
