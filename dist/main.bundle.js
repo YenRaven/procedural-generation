@@ -209,7 +209,7 @@
 	    }, {
 	        key: 'componentWillUpdate',
 	        value: function componentWillUpdate(nextProps, nextState) {
-	            if (this.sync && this.state.sync.world.seed && nextState.user.isModerator) {
+	            if (this.sync && this.state.sync.world.seed) {
 	                var onComplete = function onComplete(error) {
 	                    if (error) {
 	                        console.log('Synchronization failed');
@@ -217,7 +217,11 @@
 	                        console.log('Synchronization succeeded');
 	                    }
 	                };
-	                this.sync.instance.set(nextState.sync, onComplete);
+	                if (nextState.user.isModerator) {
+	                    this.sync.instance.set(nextState.sync, onComplete);
+	                } else {
+	                    this.sync.instance.child("climb").set(nextState.sync.climb, onComplete);
+	                }
 	            }
 	            if (nextState.sync.world.seed != this.state.sync.world.seed) {
 	                this.simplex = new _simplexNoise2.default(new _randomSeed2.default(nextState.sync.world.seed).random);
@@ -351,7 +355,7 @@
 	                }),
 	                Object.keys(this.state.sync.climb).map(function (key) {
 	                    var climb = _this2.state.sync.climb[key];
-	                    return _react2.default.createElement(RecordFlag, { position: climb });
+	                    return _react2.default.createElement(RecordFlag, { position: climb, name: key, flagColor: 'red' });
 	                }),
 	                this.boxSizes.map(function (isSize, id) {
 	                    if (isSize) {
@@ -661,7 +665,25 @@
 	    _createClass(RecordFlag, [{
 	        key: 'render',
 	        value: function render() {
-	            return _react2.default.createElement('a-cylinder', { color: '#888888', height: '3', radius: '0.025', position: this.props.position.x + ' ' + (this.props.position.y + 1.5) + ' ' + this.props.position.z });
+	            return _react2.default.createElement(
+	                'a-entity',
+	                { position: this.props.position.x + ' ' + this.props.position.y + ' ' + this.props.position.z },
+	                _react2.default.createElement('a-cylinder', { color: '#888888', height: '3', radius: '0.025', position: '0 1.5 0' }),
+	                _react2.default.createElement(
+	                    'a-plane',
+	                    { color: this.props.flagColor, width: '1', height: '0.6', position: '0.5 2.7 0' },
+	                    _react2.default.createElement('a-entity', {
+	                        position: '0 0 0.03',
+	                        'n-text': 'text: ' + this.props.name + '; fontSize: 1; horizontalAlign: center;' })
+	                ),
+	                _react2.default.createElement(
+	                    'a-plane',
+	                    { color: this.props.flagColor, width: '1', height: '0.6', position: '0.5 2.7 0', rotation: '0 180 0' },
+	                    _react2.default.createElement('a-entity', {
+	                        position: '0 0 0.03',
+	                        'n-text': 'text: ' + this.props.name + '; fontSize: 1; horizontalAlign: center;' })
+	                )
+	            );
 	        }
 	    }]);
 	
@@ -696,7 +718,7 @@
 	                    'n-cockpit-parent': true
 	                },
 	                _react2.default.createElement('a-entity', {
-	                    position: '0 0 0.01',
+	                    position: '0 0 0.02',
 	                    'n-text': 'text: ' + this.props.value + '; fontSize: 1; horizontalAlign: center;',
 	                    'n-cockpit-parent': true
 	                })
