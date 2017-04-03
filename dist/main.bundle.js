@@ -267,7 +267,7 @@
 	                            }, id: 'terrain' + id }) : null;
 	                    })
 	                ),
-	                this.state.user && (this.state.user.isModerator || this.state.approvedSudoMods.includes(this.state.user.displayName)) ? [_react2.default.createElement(TextControlBtn, {
+	                this.state.user && (this.state.user.isModerator || this.state.approvedSudoMods.includes(this.state.user.displayName) && !debugClient) ? [_react2.default.createElement(TextControlBtn, {
 	                    key: 'newBtn',
 	                    position: new THREE.Vector3(-1, 0.4, -1.5),
 	                    color: '#888888',
