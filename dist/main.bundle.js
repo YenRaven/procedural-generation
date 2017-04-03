@@ -347,7 +347,10 @@
 	                    width: this.state.sync.world.width + 16,
 	                    height: this.state.sync.world.height + 16,
 	                    src: '#grass',
-	                    repeat: this.state.sync.world.width + 16 + ' ' + (this.state.sync.world.height + 16),
+	                    repeat: this.state.sync.world.width + 16 + ' ' + (this.state.sync.world.height + 16)
+	                }),
+	                _react2.default.createElement('a-entity', {
+	                    position: '0 0 0',
 	                    sound: 'src: url(../assets/From_Russia_With_Love.mp3); autoplay: true; loop: true; volume: 0.3;'
 	                }),
 	                Object.keys(this.state.sync.climb).map(function (key, id, keyList) {
