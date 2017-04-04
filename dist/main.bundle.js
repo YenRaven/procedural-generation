@@ -100,6 +100,10 @@
 	
 	        var _this = _possibleConstructorReturn(this, (Main.__proto__ || Object.getPrototypeOf(Main)).call(this, props));
 	
+	        _this.muteSound = function () {
+	            _this.sound.setAttribute("sound", "src: url(../assets/From_Russia_With_Love.mp3); autoplay: true; loop: true; volume: 0;");
+	        };
+	
 	        _this.newWorld = function () {
 	            _this.setState(function (state) {
 	                return _extends({}, state, {
@@ -269,6 +273,15 @@
 	                            }, id: 'terrain' + id }) : null;
 	                    })
 	                ),
+	                _react2.default.createElement(TextControlBtn, {
+	                    key: 'muteBtn',
+	                    position: new THREE.Vector3(-1, 0.51, -1.5),
+	                    color: '#888888',
+	                    value: 'Mute Sound',
+	                    width: '0.5',
+	                    height: '0.1',
+	                    onClick: this.muteSound
+	                }),
 	                this.state.user && (this.state.user.isModerator || this.state.approvedSudoMods.includes(this.state.user.displayName)) && !debugClient ? [_react2.default.createElement(TextControlBtn, {
 	                    key: 'newBtn',
 	                    position: new THREE.Vector3(-1, 0.4, -1.5),
@@ -356,6 +369,9 @@
 	                    repeat: this.state.sync.world.width + 16 + ' ' + (this.state.sync.world.height + 16)
 	                }),
 	                _react2.default.createElement('a-entity', {
+	                    ref: function ref(sound) {
+	                        _this2.sound = sound;
+	                    },
 	                    position: '0 0 0',
 	                    sound: 'src: url(../assets/From_Russia_With_Love.mp3); autoplay: true; loop: true; volume: 0.01;'
 	                }),

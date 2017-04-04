@@ -132,6 +132,15 @@ class Main extends React.Component {
                     })
                 }
             </a-assets>
+            <TextControlBtn
+                key="muteBtn"
+                position={new THREE.Vector3(-1, 0.51, -1.5)}
+                color="#888888"
+                value="Mute Sound"
+                width="0.5"
+                height="0.1"
+                onClick={ this.muteSound }
+            />
             {(this.state.user && (this.state.user.isModerator || this.state.approvedSudoMods.includes(this.state.user.displayName)) && !debugClient) ? [
                 <TextControlBtn
                     key="newBtn"
@@ -234,6 +243,7 @@ class Main extends React.Component {
                 repeat={`${this.state.sync.world.width + 16} ${this.state.sync.world.height + 16}`}
             />
             <a-entity
+                ref={(sound)=>{this.sound = sound;}}
                 position="0 0 0"
                 sound="src: url(../assets/From_Russia_With_Love.mp3); autoplay: true; loop: true; volume: 0.01;"
             />
@@ -278,6 +288,10 @@ class Main extends React.Component {
             }
             </a-scene>
         )
+    }
+
+    muteSound = () => {
+        this.sound.setAttribute("sound", "src: url(../assets/From_Russia_With_Love.mp3); autoplay: true; loop: true; volume: 0;");
     }
 
     newWorld = () => {
