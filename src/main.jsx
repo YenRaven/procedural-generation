@@ -33,7 +33,8 @@ class Main extends React.Component {
             enclosure: false,
             user:false,
             skeleton:false,
-            approvedSudoMods:["YenRaven", "Zerithax"],
+            approvedSudoMods:["YenRaven", "Zerithax", "Kai", "Evildoer"],
+            muted:false,
             sync:{
                 colors:CSS_COLOR_NAMES,
                 world:{
@@ -291,7 +292,19 @@ class Main extends React.Component {
     }
 
     muteSound = () => {
-        this.sound.setAttribute("sound", "src: url(../assets/From_Russia_With_Love.mp3); autoplay: true; loop: true; volume: 0;");
+        this.setState((state) => {
+            if(state.muted){
+                this.sound.setAttribute("sound", "src: url(../assets/From_Russia_With_Love.mp3); autoplay: true; loop: true; volume: 0.01;");
+            }else{
+                this.sound.setAttribute("sound", "src: url(../assets/From_Russia_With_Love.mp3); autoplay: true; loop: true; volume: 0;");
+            }
+
+
+            return {
+                ...state,
+                muted:!state.muted
+            }
+        })
     }
 
     newWorld = () => {

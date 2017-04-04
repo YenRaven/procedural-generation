@@ -101,7 +101,17 @@
 	        var _this = _possibleConstructorReturn(this, (Main.__proto__ || Object.getPrototypeOf(Main)).call(this, props));
 	
 	        _this.muteSound = function () {
-	            _this.sound.setAttribute("sound", "src: url(../assets/From_Russia_With_Love.mp3); autoplay: true; loop: true; volume: 0;");
+	            _this.setState(function (state) {
+	                if (state.muted) {
+	                    _this.sound.setAttribute("sound", "src: url(../assets/From_Russia_With_Love.mp3); autoplay: true; loop: true; volume: 0.01;");
+	                } else {
+	                    _this.sound.setAttribute("sound", "src: url(../assets/From_Russia_With_Love.mp3); autoplay: true; loop: true; volume: 0;");
+	                }
+	
+	                return _extends({}, state, {
+	                    muted: !state.muted
+	                });
+	            });
 	        };
 	
 	        _this.newWorld = function () {
@@ -171,7 +181,8 @@
 	            enclosure: false,
 	            user: false,
 	            skeleton: false,
-	            approvedSudoMods: ["YenRaven", "Zerithax"],
+	            approvedSudoMods: ["YenRaven", "Zerithax", "Kai", "Evildoer"],
+	            muted: false,
 	            sync: {
 	                colors: CSS_COLOR_NAMES,
 	                world: {
