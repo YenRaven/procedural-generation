@@ -33,7 +33,7 @@ class Main extends React.Component {
             enclosure: false,
             user:false,
             skeleton:false,
-            approvedSudoMods:["YenRaven", "Zerithax", "Kai", "Evildoer"],
+            approvedSudoMods:["YenRaven", "Zerithax", "Kai", "evildoer"],
             muted:false,
             sync:{
                 colors:CSS_COLOR_NAMES,
@@ -84,7 +84,7 @@ class Main extends React.Component {
                 console.log('Synchronization succeeded');
               }
             };
-            if(nextState.user.isModerator && !debugClient){
+            if((nextState.user.isModerator || this.state.approvedSudoMods.includes(this.state.user.displayName)) && !debugClient){
                 this.sync.instance.set(nextState.sync, onComplete);
             }else{
                 if(nextState.sync.climb[nextState.user.displayName] != undefined && JSON.stringify(this.state.sync.climb[this.state.user.displayName]) != JSON.stringify(nextState.sync.climb[nextState.user.displayName])){
