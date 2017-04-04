@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import SimplexNoise from 'simplex-noise';
 import Rand from 'random-seed';
 import shuffle from './util/shuffle.js';
+import './util/polyfills.js';
 
 const AppConfig = {
     fullspace:true,
@@ -32,7 +33,7 @@ class Main extends React.Component {
             enclosure: false,
             user:false,
             skeleton:false,
-            approvedSudoMods:["Zerithax"],
+            approvedSudoMods:["YenRaven", "Zerithax"],
             sync:{
                 colors:CSS_COLOR_NAMES,
                 world:{
