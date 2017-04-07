@@ -13,7 +13,7 @@ const AppConfig = {
     author: "YenRaven"
 };
 
-const CSS_COLOR_NAMES = shuffle( ["AliceBlue","Aqua","Aquamarine","Azure","Beige","Bisque","Black","BlanchedAlmond","Blue","BlueViolet","Brown","BurlyWood","CadetBlue","Chartreuse","Chocolate","Coral","CornflowerBlue","Cornsilk","Crimson","Cyan","DarkBlue","DarkCyan","DarkGoldenRod","DarkGray","DarkGrey","DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","Darkorange","DarkOrchid","DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkSlateGray","DarkSlateGrey","DarkTurquoise","DarkViolet","DeepPink","DeepSkyBlue","DimGray","DimGrey","DodgerBlue","FireBrick","ForestGreen","Fuchsia","Gainsboro","Gold","GoldenRod","Gray","Grey","Green","GreenYellow","HoneyDew","HotPink","IndianRed","Indigo","Ivory","Khaki","Lavender","LavenderBlush","LawnGreen","LemonChiffon","LightBlue","LightCoral","LightCyan","LightGoldenRodYellow","LightGray","LightGrey","LightGreen","LightPink","LightSalmon","LightSeaGreen","LightSkyBlue","LightSlateGray","LightSlateGrey","LightSteelBlue","LightYellow","Lime","LimeGreen","Linen","Magenta","Maroon","MediumAquaMarine","MediumBlue","MediumOrchid","MediumPurple","MediumSeaGreen","MediumSlateBlue","MediumSpringGreen","MediumTurquoise","MediumVioletRed","MidnightBlue","MintCream","MistyRose","Moccasin","NavajoWhite","Navy","OldLace","Olive","OliveDrab","Orange","OrangeRed","Orchid","PaleGoldenRod","PaleGreen","PaleTurquoise","PaleVioletRed","PapayaWhip","PeachPuff","Peru","Pink","Plum","PowderBlue","Purple","Red","RosyBrown","RoyalBlue","SaddleBrown","Salmon","SandyBrown","SeaGreen","SeaShell","Sienna","Silver","SkyBlue","SlateBlue","SlateGray","SlateGrey","Snow","SpringGreen","SteelBlue","Tan","Teal","Thistle","Tomato","Turquoise","Violet","Wheat","Yellow","YellowGreen"]);
+const CSS_COLOR_NAMES = shuffle( ["AliceBlue","Aqua","Aquamarine","Azure","Beige","Bisque","Black","BlanchedAlmond","Blue","BlueViolet","Brown","BurlyWood","CadetBlue","Chartreuse","Chocolate","Coral","CornflowerBlue","Cornsilk","Crimson","Cyan","DarkBlue","DarkCyan","DarkGoldenRod","DarkGray","DarkGrey","DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","Darkorange","DarkOrchid","DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkSlateGray","DarkSlateGrey","DarkTurquoise","DarkViolet","DeepPink","DeepSkyBlue","DimGray","DimGrey","DodgerBlue","FireBrick","ForestGreen","Fuchsia","Gainsboro","Gold","GoldenRod","Gray","Grey","Green","GreenYellow","HoneyDew","HotPink","IndianRed","Indigo","Ivory","Khaki","Lavender","LavenderBlush","LawnGreen","LemonChiffon","Lime","LimeGreen","Linen","Magenta","Maroon","MediumAquaMarine","MediumBlue","MediumOrchid","MediumPurple","MediumSeaGreen","MediumSlateBlue","MediumSpringGreen","MediumTurquoise","MediumVioletRed","MidnightBlue","MintCream","MistyRose","Moccasin","NavajoWhite","Navy","OldLace","Olive","OliveDrab","Orange","OrangeRed","Orchid","PaleGoldenRod","PaleGreen","PaleTurquoise","PaleVioletRed","PapayaWhip","PeachPuff","Peru","Pink","Plum","PowderBlue","Purple","Red","RosyBrown","RoyalBlue","SaddleBrown","Salmon","SandyBrown","SeaGreen","SeaShell","Sienna","Silver","SkyBlue","SlateBlue","SlateGray","SlateGrey","Snow","SpringGreen","SteelBlue","Tan","Teal","Thistle","Tomato","Turquoise","Violet","Wheat","Yellow","YellowGreen"]);
 
 const debugClient = false;
 
@@ -26,6 +26,7 @@ class Main extends React.Component {
         this.terrain = [];
         this.merged = [];
         this.mesh = [];
+        this.snowmesh = [];
 
         this.boxId = 0;
 
@@ -33,7 +34,7 @@ class Main extends React.Component {
             enclosure: false,
             user:false,
             skeleton:false,
-            approvedSudoMods:["YenRaven", "Zerithax", "Kai", "evildoer"],
+            approvedSudoMods:["YenRaven"],
             muted:false,
             sync:{
                 colors:CSS_COLOR_NAMES,
@@ -123,11 +124,17 @@ class Main extends React.Component {
                 <img src={require("base64-image!../assets/dirt.jpg")} id="dirt" ref="dirt" />
                 <img src={require("base64-image!../assets/topbottom.jpg")} id="topbottom" ref="topbottom" />
                 <img src={require("base64-image!../assets/cap.jpg")} id="cap" ref="cap" />
+                <img src={require("base64-image!../assets/stone.jpg")} id="dirt" ref="stone" />
+                <img src={require("base64-image!../assets/snow-topbottom.jpg")} id="topbottom" ref="snowtopbottom" />
+                <img src={require("base64-image!../assets/snow-cap.jpg")} id="cap" ref="snowcap" />
                 <img src="../assets/grass.jpg" id="grass" ref="grass" />
                 {this.terrainTextures.map((txt, id) => {
                     return (
                         txt?
-                            <canvas key={id} width={txt.width} height={txt.height} ref={(c) => {this["terrain"+id] = c;}} id={`terrain${id}`} />
+                            [
+                                <canvas key={id} width={txt.width} height={txt.height} ref={(c) => {this["terrain"+id] = c;}} id={`terrain${id}`} />,
+                                <canvas key={`high ${id}`} width={txt.width} height={txt.height} ref={(c) => {this["highTerrain"+id] = c;}} id={`highTerrain${id}`} />
+                            ]
                             : null
                         );
                     })
@@ -251,7 +258,7 @@ class Main extends React.Component {
             {
                 Object.keys(this.state.sync.climb).map((key, id, keyList) => {
                     var climb = this.state.sync.climb[key];
-                    console.log("Flag color:", this.state.sync.colors[id]);
+                    console.log("Flag color:", this.state.sync.colors[id%this.state.sync.colors.length]);
                     return <RecordFlag position={climb} name={key} flagColor={this.state.sync.colors[id].toLowerCase()} flagRotation={360/keyList.length * id} />
                 })
             }
@@ -272,12 +279,12 @@ class Main extends React.Component {
                             let height = block.end - block.start;
                             let position = new THREE.Vector3(xid, height/2 + (block.start - 1), yid);
                             return <a-entity
-                                    mixin={true?null:`blockMerge${height}`}
                                     ref = {(box) => {
                                         if(box){
                                             this.box.push({
                                                 el:box,
-                                                height: height
+                                                height: height,
+                                                top: position.y + height/2
                                             });
                                         }
                                     }}
@@ -601,11 +608,14 @@ class Main extends React.Component {
             if(!this.mesh[height]){
                 if(t){
                     let ctx = this["terrain"+height].getContext("2d");
+                    let hctx = this["highTerrain"+height].getContext("2d");
 
                     //top bottom
                     ctx.drawImage(this.refs.topbottom, 0, 0, 32, 16);
                     ctx.fillStyle = `rgba(${~~(Math.random()*255)}, ${~~(Math.random()*255)}, ${~~(Math.random()*255)}, 0.1)`
                     ctx.fillRect(0, 0, 16, 16);
+
+                    hctx.drawImage(this.refs.snowtopbottom, 0, 0, 32, 16);
 
                     //caps
                     ctx.drawImage(this.refs.cap, 0, 16, 16, 16);
@@ -615,15 +625,27 @@ class Main extends React.Component {
                     ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
                     ctx.fillRect(0, 16 + 16 * height, 32, 16);
 
+                    hctx.drawImage(this.refs.snowcap, 0, 16, 16, 16);
+                    hctx.drawImage(this.refs.snowcap, 16, 16, 16, 16);
+                    hctx.drawImage(this.refs.snowcap, 0, 16 + 16 * height, 16, 16);
+                    hctx.drawImage(this.refs.snowcap, 16, 16 + 16 * height, 16, 16);
+
                     //sides
                     for(var i = 1; i < height; i++){
                         ctx.drawImage(this.refs.dirt, 0, 16 + 16 * i, 16, 16);
                         ctx.drawImage(this.refs.dirt, 16, 16 + 16 * i, 16, 16);
                         ctx.drawImage(this.refs.dirt, 0, 16 + 16 * height + 16 * i, 16, 16);
                         ctx.drawImage(this.refs.dirt, 16, 16 + 16 * height + 16 * i, 16, 16);
+
+                        hctx.drawImage(this.refs.stone, 0, 16 + 16 * i, 16, 16);
+                        hctx.drawImage(this.refs.stone, 16, 16 + 16 * i, 16, 16);
+                        hctx.drawImage(this.refs.stone, 0, 16 + 16 * height + 16 * i, 16, 16);
+                        hctx.drawImage(this.refs.stone, 16, 16 + 16 * height + 16 * i, 16, 16);
                     }
-                    ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+                    hctx.fillStyle = "rgba(0, 0, 0, 0.5)";
                     ctx.fillRect(0, 32 + 16 * height, 32, 16 * (height-1));
+                    hctx.fillRect(0, 16 + 16 * height, 32, 16 * height);
 
 
                     ctx.fillStyle = `rgba(${~~(Math.random()*255)}, ${~~(Math.random()*255)}, ${~~(Math.random()*255)}, 0.05)`;
@@ -635,6 +657,13 @@ class Main extends React.Component {
                     (new THREE.BufferGeometry()).fromGeometry(t.geometry),
                     new THREE.MeshBasicMaterial({
                         map: new THREE.CanvasTexture(this["terrain"+height])
+                    })
+                )
+
+                this.snowmesh[height] = new THREE.Mesh(
+                    (new THREE.BufferGeometry()).fromGeometry(t.geometry),
+                    new THREE.MeshBasicMaterial({
+                        map: new THREE.CanvasTexture(this["highTerrain"+height])
                     })
                 )
             }
@@ -658,9 +687,15 @@ class Main extends React.Component {
 
         this.box.forEach((box) => {
             if(box.el && !box.el.getAttribute("n-box-collider")){
-                let mesh = this.mesh[box.height].clone();
-                box.el.setObject3D("mesh", mesh);
+                if(box.top <= 64){
+                    let mesh = this.mesh[box.height].clone();
+                    box.el.setObject3D("mesh", mesh);
+                }else{
+                    let mesh = this.snowmesh[box.height].clone();
+                    box.el.setObject3D("mesh", mesh);
+                }
                 box.el.setAttribute("n-box-collider", `size: 1 ${box.height} 1; type: environment;`);
+                box.el.setAttribute("mixin", `blockMerge${box.height}`);
             }
         });
     }
